@@ -34,6 +34,31 @@ async def main():
         print('Listening...')
         await client.start_notify(char_specifier=desk_attribute_read, callback=callback)
 
-        await asyncio.sleep(30)
+        print('Setting up...')
+        await client.write_gatt_char(desk_attribute_write, b'\xf1\xf1\xb2\x00\xb2\x7e')
+        print('Sent!')
+
+        # print('Settings')
+        # await client.write_gatt_char(desk_attribute_write, b'\xf1\xf1\x07\x00\x07\x7e')
+        # print('Sent!')
+
+        # print('Move up...')
+        # await client.write_gatt_char(desk_attribute_write, b'\xf1\xf1\x01\x00\x01\x7e')
+        # print('Sent!')
+
+        print('Position 1')
+        await client.write_gatt_char(desk_attribute_write, b'\xf1\xf1\x05\x00\x05\x7e')
+        print('Sent!')
+
+        # print('?')
+        # await client.write_gatt_char(desk_attribute_write, b'\xf1\xf1\xaa\x00\xaa\x7e')
+        # print('Sent!')
+
+        # print('Go to 1000')
+        # await client.write_gatt_char(desk_attribute_write, b'\xf1\xf1\x1b\x03\x03\xe8\x00\x09\x7e')
+        # print('Sent!')
+
+        while True:
+            await asyncio.sleep(1)
 
 asyncio.run(main())

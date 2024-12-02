@@ -12,7 +12,7 @@ valid_addresses = [
 command_height = 0x01
 
 @dataclass
-class BaseMessage():
+class BaseMessage(): # TODO: Rename this to 'Frame'
     from_desk: bool
     command: int
     params: bytes
@@ -39,9 +39,12 @@ class BaseMessage():
 class HeightMessage():
     height_mm: int
     height_in: float
+    unknown: int
 
     def __init__(self, base):
         height = base.params[0] * 0xff + base.params[1]
+        self.unknown = base.params[2]
+
         # Height in mm
         if (height > 550):
             self.height_mm = height
@@ -59,7 +62,7 @@ def parse(message_bytes):
 
     return base
 
-def parse_base(message_bytes):
+def parse_base(message_bytes): # TODO: Parse Frame
     # Length test
     if (len(message_bytes) < 6):
         raise Exception('Message too short')
