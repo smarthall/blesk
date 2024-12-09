@@ -175,4 +175,3 @@ class Blesk:
         units = await units_task
 
         return HeightData(frame.params[0:2]).decode_as(units).as_mm.as_float
-        
