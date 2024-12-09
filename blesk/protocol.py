@@ -17,6 +17,7 @@ class Address(Enum):
     HOST = b'\xf2\xf2'
 
 class Preset(Enum):
+    __order__ = "ONE TWO THREE FOUR"
     ONE = 0x01
     TWO = 0x02
     THREE = 0x03
@@ -28,7 +29,7 @@ class Units(Enum):
 
 class HostType(Enum):
     """
-    Messages types for messages _to_ the Host
+    Messages types for messages _to_ the Host _from_ the Desk
     """
     HEIGHT = 0x01
 
@@ -49,7 +50,7 @@ class HostType(Enum):
 
 class DeskType(Enum):
     """
-    Messages types for messages _to_ the Desk
+    Messages types for messages _to_ the Desk _from_ the Host
     """
     RAISE = 0x01
     LOWER = 0x02

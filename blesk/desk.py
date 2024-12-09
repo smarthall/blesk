@@ -166,3 +166,13 @@ class Blesk:
         preset_info = PresetDict[preset]
 
         await self.send_frame(Frame(command=preset_info.goto))
+
+    async def get_preset_mm(self, preset: Preset):
+        preset_info = PresetDict[preset]
+
+        units_task = asyncio.create_task(self.get_units())
+        frame = await self.query(send=Frame(command=DeskType.SETTINGS), receive=preset_info.get)
+        units = await units_task
+
+        return HeightData(frame.params[0:2]).decode_as(units).as_mm.as_float
+        

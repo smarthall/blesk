@@ -69,3 +69,34 @@ async def current():
         height = await dev.get_height_mm()
         
     print(f"Height is {height}mm")
+
+async def preset_all():
+    task = {}
+
+    dev = await get_desk()
+
+    async with asyncio.TaskGroup() as tg:
+        async with dev:
+            for p in Preset:
+                task[p] = tg.create_task(dev.get_preset_mm(p))
+
+    for p in Preset:
+        print(f"Preset {p.name} height is {task[p].result()}mm")
+
+@get.command()
+@click.argument('preset')
+@make_sync
+async def preset(preset: str):
+    if preset == 'all':
+        return await preset_all()
+
+    try:
+        p = Preset(int(preset))
+    except ValueError:
+        print(f'{preset} is not a valid preset')
+
+    dev = await get_desk()
+    async with dev:
+        height = await dev.get_preset_mm(p)
+
+    print(f"Preset {p.name} height is {height}mm")
