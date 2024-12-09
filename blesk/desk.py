@@ -48,6 +48,11 @@ class Blesk:
 
         await self._valid_frame_callback(frame)
 
+    def _disconnect_callback(self, client: BleakClient):
+        logger.debug(f'Disconnected from {self.address}')
+
+        self._connection_cache = {}
+
     async def _valid_frame_callback(self, frame: Frame) -> None:
         # Store in the cache
         self._connection_cache[frame.command] = frame
@@ -55,16 +60,17 @@ class Blesk:
         # Call any subscribers
         to_remove = []
 
-        for l in self._listeners:
-            try:
-                await l.put(frame)
-            except asyncio.QueueShutDown as e:
-                logger.warning(f'Listener queue was closed')
-                to_remove.append(l)
+        async with asyncio.TaskGroup() as tg:
+            for l in self._listeners:
+                try:
+                    tg.create_task(l.put(frame))
+                except asyncio.QueueShutDown as e:
+                    logger.warning(f'Listener queue was closed')
+                    to_remove.append(l)
 
-        # Remove all the shut down queues
-        for r in to_remove:
-            self.unsubscribe(r)
+            # Remove all the shut down queues
+            for r in to_remove:
+                self.unsubscribe(r)
 
     def subscribe(self) -> asyncio.Queue:
         q = asyncio.Queue()
@@ -75,11 +81,6 @@ class Blesk:
     
     def unsubscribe(self, queue) -> None:
         self._listeners.remove(queue)
-
-    def _disconnect_callback(self, client: BleakClient):
-        logger.debug(f'Disconnected from {self.address}')
-
-        self._connection_cache = {}
 
     def __repr__(self) -> str:
         return f'Blesk(name="{self.name}", address="{self.address}")'
@@ -137,12 +138,6 @@ class Blesk:
         await self.disconnect()
         return False
 
-    async def move_one(self):
-        await self.send_frame(Frame(command=DeskType.MOVE_1))
-
-    async def settings(self):
-        await self.send_frame(Frame(command=DeskType.SETTINGS))
-
     async def get_units(self) -> Units:
         frame = await self.query(send=Frame(command=DeskType.SETTINGS), receive=HostType.UNITS)
 
@@ -159,11 +154,6 @@ class Blesk:
 
         return HeightData(frame.params[0:2]).decode_as(units).as_mm.as_float
 
-    async def goto_preset(self, preset: Preset):
-        preset_info = PresetDict[preset]
-
-        await self.send_frame(Frame(command=preset_info.goto))
-
     async def goto_mm(self, mm: int):
         units = await self.get_units()
 
@@ -171,3 +161,8 @@ class Blesk:
             await self.send_frame(Frame(command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).encode.data))
         else:
             await self.send_frame(Frame(command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).as_in.encode.data))
+
+    async def goto_preset(self, preset: Preset):
+        preset_info = PresetDict[preset]
+
+        await self.send_frame(Frame(command=preset_info.goto))
