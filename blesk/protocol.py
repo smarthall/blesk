@@ -1,5 +1,6 @@
 import logging
 
+from collections import namedtuple
 from dataclasses import dataclass
 from enum import Enum
 
@@ -14,6 +15,16 @@ maximum_param_length = maximum_length - header_length
 class Address(Enum):
     DESK = b'\xf1\xf1'
     HOST = b'\xf2\xf2'
+
+class Preset(Enum):
+    ONE = 0x01
+    TWO = 0x02
+    THREE = 0x03
+    FOUR = 0x04
+
+class Units(Enum):
+    MM = 0x00
+    IN = 0x01
 
 class HostType(Enum):
     """
@@ -40,20 +51,33 @@ class DeskType(Enum):
     """
     Messages types for messages _to_ the Desk
     """
+    RAISE = 0x01
+    LOWER = 0x02
+    PROGMEM_1 = 0x03
+    PROGMEM_2 = 0x04
     MOVE_1 = 0x05
     MOVE_2 = 0x06
     SETTINGS = 0x07
 
     UNITS = 0x0e
 
+    GOTO_HEIGHT = 0x1b
+
+    PROGMEM_3 = 0x25
+    PROGMEM_4 = 0x26
     MOVE_3 = 0x27
     MOVE_4 = 0x28
 
     BLE_WAKE = 0xb2
 
-class Units(Enum):
-    MM = 0x00
-    IN = 0x01
+PresetInfo = namedtuple('PositionInfo', ['goto', 'set_current', 'get'])
+
+PresetDict = {
+    Preset.ONE: PresetInfo(DeskType.MOVE_1, DeskType.PROGMEM_1, HostType.POSITION_1),
+    Preset.TWO: PresetInfo(DeskType.MOVE_2, DeskType.PROGMEM_2, HostType.POSITION_2),
+    Preset.THREE: PresetInfo(DeskType.MOVE_3, DeskType.PROGMEM_3, HostType.POSITION_3),
+    Preset.FOUR: PresetInfo(DeskType.MOVE_4, DeskType.PROGMEM_4, HostType.POSITION_4),
+}
 
 @dataclass
 class HeightData:

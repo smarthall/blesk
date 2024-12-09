@@ -5,7 +5,7 @@ from bleak import BleakClient, BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 
 from .const import desk_service_uuid, desk_attribute_read, desk_attribute_write
-from .protocol import Frame, DeskType, HeightData, HostType, Units
+from .protocol import Frame, DeskType, HeightData, HostType, Preset, Units, PresetDict, HeightMM
 
 logger = logging.getLogger(__name__)
 
@@ -150,3 +150,16 @@ class Blesk:
         frame = await height_task
 
         return HeightData(frame.params[0:2]).decode_as(units).as_mm.as_float
+
+    async def goto_preset(self, preset: Preset):
+        preset_info = PresetDict[preset]
+
+        await self.send_frame(Frame(command=preset_info.goto))
+
+    async def goto_mm(self, mm: int):
+        units = await self.get_units()
+
+        if units == Units.MM:
+            await self.send_frame(Frame(command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).encode.data))
+        else:
+            await self.send_frame(Frame(command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).as_in.encode.data))
