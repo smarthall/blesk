@@ -51,6 +51,79 @@ class DeskType(Enum):
 
     BLE_WAKE = 0xb2
 
+class Units(Enum):
+    MM = 0x00
+    IN = 0x01
+
+@dataclass
+class HeightData:
+    data: bytes
+
+    def decode_as(self, unit: Units) -> 'HeightMM | HeightIn':
+        if (unit == Units.MM):
+            return HeightMM((self.data[0] * 0x100) + self.data[1])
+        
+        tenth_inches = (self.data[0] * 0x100) + self.data[1]
+        return HeightIn(tenth_inches / 10)
+
+    @property
+    def decode_as_mm(self) -> 'HeightMM':
+        return self.decode_as(Units.MM)
+
+    @property
+    def decode_as_in(self) -> 'HeightIn':
+        return self.decode_as(Units.IN)
+
+@dataclass
+class HeightMM:
+    mm: float
+
+    @property
+    def as_float(self) -> float:
+        return self.mm
+
+    @property
+    def as_mm(self) -> 'HeightMM':
+        return self
+
+    @property
+    def as_in(self) -> 'HeightIn':
+        return HeightIn(self.mm * 0.0393701)
+    
+    @property
+    def encode(self) -> HeightData:
+        data = bytearray(2)
+
+        data[0] = int(self.mm / 0x100)
+        data[1] = int(self.mm % 0x100)
+
+        return HeightData(data)
+
+@dataclass
+class HeightIn:
+    inches: float
+
+    @property
+    def as_float(self) -> float:
+        return self.mm
+    
+    @property
+    def as_mm(self) -> 'HeightMM':
+        return HeightMM(self.inches / 0.0393701)
+    
+    @property
+    def as_in(self) -> 'HeightIn':
+        return self
+    
+    @property
+    def encode(self) -> HeightData:
+        data = bytearray(2)
+
+        data[0] = int(self.inches * 10 / 0x100)
+        data[1] = int(self.inches * 10 % 0x100)
+
+        return HeightData(data)
+
 @dataclass
 class Frame:
     command: HostType | DeskType

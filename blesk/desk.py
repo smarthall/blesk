@@ -7,14 +7,9 @@ from bleak import BleakClient, BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 
 from .const import desk_service_uuid, desk_attribute_read, desk_attribute_write
-from .protocol import Frame, DeskType, HostType
+from .protocol import Frame, DeskType, HeightData, HostType, Units
 
 logger = logging.getLogger(__name__)
-
-
-class Units(Enum):
-    MM = 0x00
-    IN = 0x01
 
 
 class Blesk:
@@ -135,7 +130,4 @@ class Blesk:
         units = await units_task
         frame = await height_task
 
-        if (units == Units.MM):
-            return (frame.params[0] * 0x100) + frame.params[1]
-        else:
-            return ((frame.params[0] * 0x100) + frame.params[1]) * 2.54
+        return HeightData(frame.params[0:2]).decode_as(units).as_mm.as_float
