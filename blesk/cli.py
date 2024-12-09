@@ -68,7 +68,7 @@ async def current():
     async with dev:
         height = await dev.get_height_mm()
         
-    print(f"Height is {height}mm")
+    print(f"Current height is {height}mm")
 
 @get.command()
 @click.argument('preset')
