@@ -70,16 +70,6 @@ async def current():
         
     print(f"Height is {height}mm")
 
-async def preset_all():
-    dev = await get_desk()
-
-    async with dev:
-        # Getting one will get all, so the later iterations will be instantly served from cache
-        for p in Preset:
-            height = await dev.get_preset_mm(p)
-
-            print(f"Preset {p.name.lower()} height is {height}mm")
-
 @get.command()
 @click.argument('preset')
 @make_sync
@@ -88,16 +78,22 @@ async def preset(preset: str):
 
     PRESET is the number of the preset, or 'all' to get all presets.
     """
-    if preset == 'all':
-        return await preset_all()
+    get_list = []
 
-    try:
-        p = Preset(int(preset))
-    except ValueError:
-        print(f'{preset} is not a valid preset')
+    if preset == 'all':
+        for p in Preset:
+            get_list.append(p)
+    else:
+        try:
+            get_list.append(Preset(int(preset)))
+        except ValueError:
+            print(f'{preset} is not a valid preset')
 
     dev = await get_desk()
-    async with dev:
-        height = await dev.get_preset_mm(p)
 
-    print(f"Preset {p.name.lower()} height is {height}mm")
+    async with dev:
+        # Getting one will get all, so the later iterations will be instantly served from cache
+        for p in get_list:
+            height = await dev.get_preset_mm(p)
+
+            print(f"Preset {p.name.lower()} height is {height}mm")
