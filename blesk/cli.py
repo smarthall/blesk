@@ -71,22 +71,23 @@ async def current():
     print(f"Height is {height}mm")
 
 async def preset_all():
-    task = {}
-
     dev = await get_desk()
 
-    async with asyncio.TaskGroup() as tg:
-        async with dev:
-            for p in Preset:
-                task[p] = tg.create_task(dev.get_preset_mm(p))
+    async with dev:
+        # Getting one will get all, so the later iterations will be instantly served from cache
+        for p in Preset:
+            height = await dev.get_preset_mm(p)
 
-    for p in Preset:
-        print(f"Preset {p.name} height is {task[p].result()}mm")
+            print(f"Preset {p.name.lower()} height is {height}mm")
 
 @get.command()
 @click.argument('preset')
 @make_sync
 async def preset(preset: str):
+    """Get the PRESET height.
+
+    PRESET is the number of the preset, or 'all' to get all presets.
+    """
     if preset == 'all':
         return await preset_all()
 
@@ -99,4 +100,4 @@ async def preset(preset: str):
     async with dev:
         height = await dev.get_preset_mm(p)
 
-    print(f"Preset {p.name} height is {height}mm")
+    print(f"Preset {p.name.lower()} height is {height}mm")
