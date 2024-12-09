@@ -6,7 +6,7 @@ from blesk import discover
 async def main() -> None:
     # Setup Logger
     logging.basicConfig(level=logging.INFO)
-    logging.getLogger('blesk').setLevel(logging.INFO)
+#    logging.getLogger('blesk').setLevel(logging.DEBUG)
 
     # Find devices
     print("Scanning...")
@@ -20,9 +20,11 @@ async def main() -> None:
     dev = devices[0]
     print(f"Connecting to {dev.address}")
     await dev.connect()
-    await dev.settings()
 
     await asyncio.sleep(1)
+
+    height = await dev.get_height_mm()
+    print(f'Height is {height}mm')
 
     print("Disconnecting...")
     await dev.disconnect()

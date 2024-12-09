@@ -23,6 +23,8 @@ class HostType(Enum):
 
     UNITS = 0x0e
 
+    UNKNOWN_17 = 0x17
+
     MEM_MODE = 0x19
 
     COLL_SENS = 0x1d
@@ -32,7 +34,7 @@ class HostType(Enum):
     POSITION_3 = 0x27
     POSITION_4 = 0x28
 
-    WAKE_RESP = 0xb2
+    BLE_WAKE_RESP = 0xb2
 
 class DeskType(Enum):
     """
@@ -42,12 +44,17 @@ class DeskType(Enum):
     MOVE_2 = 0x06
     SETTINGS = 0x07
 
-    WAKE = 0xb2
+    UNITS = 0x0e
+
+    MOVE_3 = 0x27
+    MOVE_4 = 0x28
+
+    BLE_WAKE = 0xb2
 
 @dataclass
 class Frame:
     command: HostType | DeskType
-    params: bytes
+    params: bytes = b''
 
     @property
     def address(self):
