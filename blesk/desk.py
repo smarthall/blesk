@@ -129,6 +129,14 @@ class Blesk:
     async def disconnect(self):
         await self._client.disconnect()
 
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.disconnect()
+        return False
+
     async def move_one(self):
         await self.send_frame(Frame(command=DeskType.MOVE_1))
 

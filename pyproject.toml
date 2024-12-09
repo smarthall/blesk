@@ -8,7 +8,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
 bleak = "^0.22.3"
+click = "^8.1.7"
 
+[tool.poetry.scripts]
+blesk = "blesk.cli:cli"
 
 [build-system]
 requires = ["poetry-core"]
