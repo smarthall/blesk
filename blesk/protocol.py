@@ -193,12 +193,12 @@ class Frame:
         if (address == Address.DESK):
             try:
                 command = DeskType(message_type)
-            except ValueError as e:
+            except ValueError:
                 raise ValueError(f'0x{message_type:02x} is not a valid DeskType')
         else:
             try:
                 command = HostType(message_type)
-            except ValueError as e:
+            except ValueError:
                 raise ValueError(f'0x{message_type:02x} is not a valid HostType')
 
         params = message_bytes[4:-2]

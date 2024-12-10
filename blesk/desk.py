@@ -61,12 +61,12 @@ class Blesk:
         to_remove = []
 
         async with asyncio.TaskGroup() as tg:
-            for l in self._listeners:
+            for queue in self._listeners:
                 try:
-                    tg.create_task(l.put(frame))
-                except asyncio.QueueShutDown as e:
-                    logger.warning(f'Listener queue was closed')
-                    to_remove.append(l)
+                    tg.create_task(queue.put(frame))
+                except asyncio.QueueShutDown:
+                    logger.warning('Listener queue was closed')
+                    to_remove.append(queue)
 
             # Remove all the shut down queues
             for r in to_remove:
