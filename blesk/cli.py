@@ -112,6 +112,7 @@ async def get_preset(preset: str):
 
     async with dev:
         # Getting one will get all, so the later iterations will be instantly served from cache
+        # for this reason we don't do it concurrently
         for p in get_list:
             height = await dev.get_preset_mm(p)
 
