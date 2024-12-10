@@ -13,8 +13,8 @@ maximum_length = 12
 maximum_param_length = maximum_length - header_length
 
 class Address(Enum):
-    DESK = b'\xf1\xf1'
-    HOST = b'\xf2\xf2'
+    DESK = b'\xf1\xf1' # To the desk from the host
+    HOST = b'\xf2\xf2' # To the host from the desk
 
 class Preset(Enum):
     __order__ = "ONE TWO THREE FOUR"
