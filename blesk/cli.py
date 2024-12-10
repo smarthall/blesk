@@ -6,10 +6,9 @@ from .discover import discover
 from .protocol import Preset
 
 async def get_desk():
-    devices = await discover(timeout=2)
+    devices = await discover(timeout=1)
     
     if (len(devices) == 0):
-        print("Could not find any devices...")
         return None
     
     return devices[0]
@@ -22,18 +21,25 @@ def make_sync(func):
 
 @click.group()
 @make_sync
-async def cli():
-    pass
+@click.option('--debug', is_flag=True, help='Enable debug logging, ignores --verbose')
+@click.option('--verbose', is_flag=True, help='Enable verbose logging')
+async def cli(debug: bool, verbose: bool):
+    if debug:
+        import logging
+        logging.basicConfig(level=logging.DEBUG)
+    elif verbose:
+        import logging
+        logging.basicConfig(level=logging.INFO)
 
 @cli.group()
 @make_sync
 async def go():
     pass
 
-@go.command()
+@go.command(name='preset')
 @click.argument('preset', type=int)
 @make_sync
-async def preset(preset: int):
+async def go_preset(preset: int):
     try:
         p = Preset(preset)
     except ValueError:
@@ -79,10 +85,10 @@ async def current():
         
     print(f"Current height is {height}mm")
 
-@get.command()
+@get.command(name='preset')
 @click.argument('preset')
 @make_sync
-async def preset(preset: str):
+async def get_preset(preset: str):
     """Get the PRESET height.
 
     PRESET is the number of the preset, or 'all' to get all presets.
