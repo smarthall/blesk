@@ -70,17 +70,18 @@ class Blesk:
 
             # Remove all the shut down queues
             for r in to_remove:
-                self.unsubscribe(r)
+                self._unsubscribe(r)
 
-    def subscribe(self) -> asyncio.Queue:
+    def _subscribe(self) -> asyncio.Queue:
         q = asyncio.Queue()
 
         self._listeners.append(q)
 
         return q
     
-    def unsubscribe(self, queue) -> None:
+    def _unsubscribe(self, queue: asyncio.Queue) -> None:
         self._listeners.remove(queue)
+        queue.shutdown(immediate=True)
 
     def __repr__(self) -> str:
         return f'Blesk(name="{self.name}", address="{self.address}")'
@@ -96,15 +97,14 @@ class Blesk:
     async def get_frame(self, kind: HostType, from_cache=True) -> Frame:
         # If not wait for the message
         logger.debug(f'Waiting for message of type {kind}')
-        q = self.subscribe()
+        q = self._subscribe()
 
         while True:
             frame:Frame = await q.get()
 
             if frame.command == kind:
                 logger.debug(f'Message wait for {kind} complete')
-                self.unsubscribe(q)
-                q.shutdown(immediate=True)
+                self._unsubscribe(q)
                 return frame
             
             q.task_done()
