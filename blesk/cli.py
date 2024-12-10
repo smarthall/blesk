@@ -6,7 +6,7 @@ from .discover import discover
 from .protocol import Preset
 
 async def get_desk():
-    devices = await discover(timeout=1)
+    devices = await discover(timeout=2)
     
     if (len(devices) == 0):
         print("Could not find any devices...")
@@ -40,6 +40,10 @@ async def preset(preset: int):
         print(f'{preset} is not a valid preset')
 
     dev = await get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
     async with dev:
         await dev.goto_preset(p)
 
@@ -50,6 +54,10 @@ async def height(millimeters: int):
     h = int(millimeters)
 
     dev = await get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
     async with dev:
         await dev.goto_mm(mm=h)
 
@@ -62,6 +70,10 @@ async def get():
 @make_sync
 async def current():
     dev = await get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
     async with dev:
         height = await dev.get_height_mm()
         
@@ -88,6 +100,9 @@ async def preset(preset: str):
             return
 
     dev = await get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
 
     async with dev:
         # Getting one will get all, so the later iterations will be instantly served from cache
