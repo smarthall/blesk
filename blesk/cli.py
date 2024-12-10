@@ -20,9 +20,9 @@ def make_sync(func):
     return wrapper
 
 @click.group()
-@make_sync
 @click.option('--debug', is_flag=True, help='Enable debug logging, ignores --verbose')
 @click.option('--verbose', is_flag=True, help='Enable verbose logging')
+@make_sync
 async def cli(debug: bool, verbose: bool):
     if debug:
         import logging
