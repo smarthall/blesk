@@ -60,17 +60,16 @@ class Blesk:
         # Call any subscribers
         to_remove = []
 
-        async with asyncio.TaskGroup() as tg:
-            for queue in self._listeners:
-                try:
-                    tg.create_task(queue.put(frame))
-                except asyncio.QueueShutDown:
-                    logger.warning('Listener queue was closed')
-                    to_remove.append(queue)
+        for queue in self._listeners:
+            try:
+                asyncio.create_task(queue.put(frame))
+            except asyncio.QueueShutDown:
+                logger.warning('Listener queue was closed')
+                to_remove.append(queue)
 
-            # Remove all the shut down queues
-            for r in to_remove:
-                self._unsubscribe(r)
+        # Remove all the shut down queues
+        for r in to_remove:
+            self._unsubscribe(r)
 
     def _subscribe(self) -> asyncio.Queue:
         q = asyncio.Queue()
