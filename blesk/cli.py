@@ -31,11 +31,11 @@ async def go():
     pass
 
 @go.command()
-@click.argument('preset')
+@click.argument('preset', type=int)
 @make_sync
 async def preset(preset: int):
     try:
-        p = Preset(int(preset))
+        p = Preset(preset)
     except ValueError:
         print(f'{preset} is not a valid preset')
 
@@ -44,13 +44,10 @@ async def preset(preset: int):
         await dev.goto_preset(p)
 
 @go.command()
-@click.argument('millimeters')
+@click.argument('millimeters', type=int)
 @make_sync
 async def height(millimeters: int):
-    try:
-        h = int(millimeters)
-    except ValueError:
-        print(f'{millimeters} is not a valid height')
+    h = int(millimeters)
 
     dev = await get_desk()
     async with dev:
@@ -88,6 +85,7 @@ async def preset(preset: str):
             get_list.append(Preset(int(preset)))
         except ValueError:
             print(f'{preset} is not a valid preset')
+            return
 
     dev = await get_desk()
 
