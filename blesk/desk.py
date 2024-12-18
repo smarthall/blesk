@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Blesk:
     def __init__(self, device: BLEDevice) -> None:
-        self._device = device
-
+        self._name = device.name
         self._client = BleakClient(device, services=[desk_service_uuid], disconnected_callback=self._disconnect_callback)
         
         self._listeners: list[asyncio.Queue] = []
@@ -21,11 +20,11 @@ class Blesk:
 
     @property
     def name(self) -> str:
-        return self._device.name
-    
+        return self._name
+
     @property
     def address(self) -> str:
-        return self._device.address
+        return self._client.address
 
     @property
     def is_connected(self) -> bool:

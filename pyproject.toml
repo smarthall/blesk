@@ -9,6 +9,7 @@ readme = "README.md"
 python = ">=3.13,<3.14"
 bleak = "^0.22.3"
 click = "^8.1.7"
+platformdirs = "^4.3.6"
 
 [tool.poetry.scripts]
 blesk = "blesk.cli:cli"
