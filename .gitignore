@@ -1,3 +1,12 @@
 __pycache__
 /dist
 /.vscode
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Poetry
+.venv/
