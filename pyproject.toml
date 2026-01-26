@@ -11,8 +11,18 @@ bleak = "^1.0.0"
 click = "^8.1.7"
 platformdirs = "^4.3.6"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+
 [tool.poetry.scripts]
 blesk = "blesk.cli:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
 
 [build-system]
 requires = ["poetry-core"]

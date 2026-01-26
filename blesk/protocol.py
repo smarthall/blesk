@@ -130,7 +130,7 @@ class HeightIn:
 
     @property
     def as_float(self) -> float:
-        return self.mm
+        return self.inches
     
     @property
     def as_mm(self) -> 'HeightMM':
