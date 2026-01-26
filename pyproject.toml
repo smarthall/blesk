@@ -6,8 +6,8 @@ authors = ["Daniel Hall <blesk@danielhall.me>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.13,<3.14"
-bleak = "^0.22.3"
+python = ">=3.13,<3.15"
+bleak = "^1.0.0"
 click = "^8.1.7"
 platformdirs = "^4.3.6"
 
