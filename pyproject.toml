@@ -24,6 +24,12 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+filterwarnings = [
+    # Ignore deprecation warnings from pytest-asyncio (library issue, not our code)
+    "ignore:.*asyncio.iscoroutinefunction.*:DeprecationWarning:pytest_asyncio",
+    "ignore:.*asyncio.get_event_loop_policy.*:DeprecationWarning:pytest_asyncio",
+    "ignore:.*asyncio.set_event_loop_policy.*:DeprecationWarning:pytest_asyncio",
+]
 
 [build-system]
 requires = ["poetry-core"]
