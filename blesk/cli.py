@@ -93,12 +93,8 @@ def make_sync(func):
 @click.pass_context
 async def cli(ctx, debug: bool, verbose: bool, config: str, profile: str):
     if debug:
-        import logging
-
         logging.basicConfig(level=logging.DEBUG)
     elif verbose:
-        import logging
-
         logging.basicConfig(level=logging.INFO)
 
     ctx.obj = DeskConfig(config, profile)
