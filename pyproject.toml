@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.15"
-bleak = "^1.0.0"
+bleak = "^2.0.0"
 click = "^8.1.7"
 platformdirs = "^4.3.6"
 

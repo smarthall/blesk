@@ -78,7 +78,7 @@ class Blesk:
 
         for queue in self._listeners:
             try:
-                asyncio.create_task(queue.put(frame))
+                queue.put_nowait(frame)
             except asyncio.QueueShutDown:
                 logger.warning("Listener queue was closed")
                 to_remove.append(queue)
