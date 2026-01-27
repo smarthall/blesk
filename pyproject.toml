@@ -4,6 +4,21 @@ version = "0.1.0"
 description = "Controls a standing desk using BLE"
 authors = ["Daniel Hall <blesk@danielhall.me>"]
 readme = "README.md"
+license = "Apache-2.0"
+homepage = "https://github.com/smarthall/blesk"
+repository = "https://github.com/smarthall/blesk"
+keywords = ["bluetooth", "ble", "standing-desk", "desky", "desk-control"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Home Automation",
+    "Topic :: System :: Hardware",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.15"
