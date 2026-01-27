@@ -15,6 +15,7 @@ platformdirs = "^4.3.6"
 pytest = "^8.3.4"
 pytest-asyncio = "^0.24.0"
 pytest-cov = "^6.0.0"
+ruff = "^0.14.14"
 
 [tool.poetry.scripts]
 blesk = "blesk.cli:cli"

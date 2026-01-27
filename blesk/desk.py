@@ -5,7 +5,16 @@ from bleak import BleakClient, BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 
 from .const import desk_service_uuid, desk_attribute_read, desk_attribute_write
-from .protocol import Frame, DeskType, HeightData, HostType, Preset, Units, PresetDict, HeightMM
+from .protocol import (
+    Frame,
+    DeskType,
+    HeightData,
+    HostType,
+    Preset,
+    Units,
+    PresetDict,
+    HeightMM,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +22,12 @@ logger = logging.getLogger(__name__)
 class Blesk:
     def __init__(self, device: BLEDevice) -> None:
         self._name = device.name
-        self._client = BleakClient(device, services=[desk_service_uuid], disconnected_callback=self._disconnect_callback)
-        
+        self._client = BleakClient(
+            device,
+            services=[desk_service_uuid],
+            disconnected_callback=self._disconnect_callback,
+        )
+
         self._listeners: list[asyncio.Queue] = []
         self._connection_cache: dict[HostType, Frame] = {}
 
@@ -30,25 +43,29 @@ class Blesk:
     def is_connected(self) -> bool:
         return self._client.is_connected
 
-    async def _data_callback(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
+    async def _data_callback(
+        self, sender: BleakGATTCharacteristic, data: bytearray
+    ) -> None:
         # Check the message is from where we expect
-        if (sender.uuid != desk_attribute_read):
-            logger.warning(f'Received unexpected data from service: {sender}')
+        if sender.uuid != desk_attribute_read:
+            logger.warning(f"Received unexpected data from service: {sender}")
             return
 
-        logger.debug(f'Bytes received from {self.address}: {data.hex()}')
+        logger.debug(f"Bytes received from {self.address}: {data.hex()}")
 
         try:
             frame = Frame.from_bytes(data)
-            logger.debug(f'Frame received from {self.address}: {frame}')
+            logger.debug(f"Frame received from {self.address}: {frame}")
         except Exception as e:
-            logger.warning(f'Exception while parsing message "{data.hex()}" from {self.address}: {e}')
+            logger.warning(
+                f'Exception while parsing message "{data.hex()}" from {self.address}: {e}'
+            )
             return
 
         await self._valid_frame_callback(frame)
 
     def _disconnect_callback(self, client: BleakClient):
-        logger.debug(f'Disconnected from {self.address}')
+        logger.debug(f"Disconnected from {self.address}")
 
         self._connection_cache = {}
 
@@ -63,7 +80,7 @@ class Blesk:
             try:
                 asyncio.create_task(queue.put(frame))
             except asyncio.QueueShutDown:
-                logger.warning('Listener queue was closed')
+                logger.warning("Listener queue was closed")
                 to_remove.append(queue)
 
         # Remove all the shut down queues
@@ -76,7 +93,7 @@ class Blesk:
         self._listeners.append(q)
 
         return q
-    
+
     def _unsubscribe(self, queue: asyncio.Queue) -> None:
         self._listeners.remove(queue)
         queue.shutdown(immediate=True)
@@ -85,33 +102,33 @@ class Blesk:
         return f'Blesk(name="{self.name}", address="{self.address}")'
 
     async def send_frame(self, frame: Frame):
-        logger.debug(f'Sending frame to {self.address}: {frame}')
+        logger.debug(f"Sending frame to {self.address}: {frame}")
 
         data = frame.to_bytes()
-        logger.debug(f'Sending bytes to {self.address}: {data.hex()}')
+        logger.debug(f"Sending bytes to {self.address}: {data.hex()}")
 
         await self._client.write_gatt_char(desk_attribute_write, data)
 
     async def get_frame(self, kind: HostType, from_cache=True) -> Frame:
         # If not wait for the message
-        logger.debug(f'Waiting for message of type {kind}')
+        logger.debug(f"Waiting for message of type {kind}")
         q = self._subscribe()
 
         while True:
-            frame:Frame = await q.get()
+            frame: Frame = await q.get()
 
             if frame.command == kind:
-                logger.debug(f'Message wait for {kind} complete')
+                logger.debug(f"Message wait for {kind} complete")
                 self._unsubscribe(q)
                 return frame
-            
+
             q.task_done()
 
     async def query(self, send: Frame, receive: HostType, from_cache=True):
         if from_cache and receive in self._connection_cache.keys():
-            logger.debug(f'Message type {receive} retrived from cache')
+            logger.debug(f"Message type {receive} retrived from cache")
             return self._connection_cache[receive]
-        
+
         query_task = asyncio.create_task(self.get_frame(kind=receive))
         await self.send_frame(send)
 
@@ -122,7 +139,9 @@ class Blesk:
 
     async def connect(self):
         await self._client.connect()
-        await self._client.start_notify(char_specifier=desk_attribute_read, callback=self._data_callback)
+        await self._client.start_notify(
+            char_specifier=desk_attribute_read, callback=self._data_callback
+        )
         await self.wake()
 
     async def disconnect(self):
@@ -137,7 +156,9 @@ class Blesk:
         return False
 
     async def get_units(self) -> Units:
-        frame = await self.query(send=Frame(command=DeskType.SETTINGS), receive=HostType.UNITS)
+        frame = await self.query(
+            send=Frame(command=DeskType.SETTINGS), receive=HostType.UNITS
+        )
 
         u = Units(frame.params[0])
 
@@ -145,7 +166,9 @@ class Blesk:
 
     async def get_height_mm(self) -> int:
         units_task = asyncio.create_task(self.get_units())
-        height_task = asyncio.create_task(self.query(send=Frame(command=DeskType.BLE_WAKE), receive=HostType.HEIGHT))
+        height_task = asyncio.create_task(
+            self.query(send=Frame(command=DeskType.BLE_WAKE), receive=HostType.HEIGHT)
+        )
 
         units = await units_task
         frame = await height_task
@@ -156,9 +179,15 @@ class Blesk:
         units = await self.get_units()
 
         if units == Units.MM:
-            await self.send_frame(Frame(command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).encode.data))
+            await self.send_frame(
+                Frame(command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).encode.data)
+            )
         else:
-            await self.send_frame(Frame(command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).as_in.encode.data))
+            await self.send_frame(
+                Frame(
+                    command=DeskType.GOTO_HEIGHT, params=HeightMM(mm).as_in.encode.data
+                )
+            )
 
     async def goto_preset(self, preset: Preset):
         preset_info = PresetDict[preset]
@@ -169,7 +198,9 @@ class Blesk:
         preset_info = PresetDict[preset]
 
         units_task = asyncio.create_task(self.get_units())
-        frame = await self.query(send=Frame(command=DeskType.SETTINGS), receive=preset_info.get)
+        frame = await self.query(
+            send=Frame(command=DeskType.SETTINGS), receive=preset_info.get
+        )
         units = await units_task
 
         return HeightData(frame.params[0:2]).decode_as(units).as_mm.as_float

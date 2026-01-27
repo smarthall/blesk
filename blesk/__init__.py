@@ -1,3 +1,3 @@
-from .discover import discover
-from .desk import Blesk
-from .protocol import Preset
+from .desk import Blesk as Blesk
+from .discover import discover as discover
+from .protocol import Preset as Preset

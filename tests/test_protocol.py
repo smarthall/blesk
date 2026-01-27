@@ -20,7 +20,7 @@ from blesk.protocol import (
 
 def test_decode_as_mm_zero():
     """Decode 0x0000 as MM should return 0mm."""
-    data = HeightData(b'\x00\x00')
+    data = HeightData(b"\x00\x00")
     result = data.decode_as(Units.MM)
     assert isinstance(result, HeightMM)
     assert result.mm == 0
@@ -29,7 +29,7 @@ def test_decode_as_mm_zero():
 def test_decode_as_mm_typical():
     """Decode typical value (750mm = 0x02EE)."""
     # 750 = 2*256 + 238 = 0x02EE
-    data = HeightData(b'\x02\xee')
+    data = HeightData(b"\x02\xee")
     result = data.decode_as(Units.MM)
     assert isinstance(result, HeightMM)
     assert result.mm == 750
@@ -37,7 +37,7 @@ def test_decode_as_mm_typical():
 
 def test_decode_as_mm_maximum():
     """Decode maximum value (0xFFFF = 65535mm)."""
-    data = HeightData(b'\xff\xff')
+    data = HeightData(b"\xff\xff")
     result = data.decode_as(Units.MM)
     assert isinstance(result, HeightMM)
     assert result.mm == 65535
@@ -45,7 +45,7 @@ def test_decode_as_mm_maximum():
 
 def test_decode_as_in_zero():
     """Decode 0x0000 as inches should return 0 inches."""
-    data = HeightData(b'\x00\x00')
+    data = HeightData(b"\x00\x00")
     result = data.decode_as(Units.IN)
     assert isinstance(result, HeightIn)
     assert result.inches == 0.0
@@ -54,7 +54,7 @@ def test_decode_as_in_zero():
 def test_decode_as_in_typical():
     """Decode typical value (30.5 inches = 305 tenth-inches = 0x0131)."""
     # 305 = 1*256 + 49 = 0x0131
-    data = HeightData(b'\x01\x31')
+    data = HeightData(b"\x01\x31")
     result = data.decode_as(Units.IN)
     assert isinstance(result, HeightIn)
     assert result.inches == 30.5
@@ -63,7 +63,7 @@ def test_decode_as_in_typical():
 def test_decode_as_in_maximum():
     """Decode maximum tenth-inch value."""
     # 0xFFFF = 65535 tenth-inches = 6553.5 inches
-    data = HeightData(b'\xff\xff')
+    data = HeightData(b"\xff\xff")
     result = data.decode_as(Units.IN)
     assert isinstance(result, HeightIn)
     assert result.inches == 6553.5
@@ -71,7 +71,7 @@ def test_decode_as_in_maximum():
 
 def test_decode_as_mm_property():
     """Test decode_as_mm property."""
-    data = HeightData(b'\x02\xee')
+    data = HeightData(b"\x02\xee")
     result = data.decode_as_mm
     assert isinstance(result, HeightMM)
     assert result.mm == 750
@@ -79,7 +79,7 @@ def test_decode_as_mm_property():
 
 def test_decode_as_in_property():
     """Test decode_as_in property."""
-    data = HeightData(b'\x01\x31')
+    data = HeightData(b"\x01\x31")
     result = data.decode_as_in
     assert isinstance(result, HeightIn)
     assert result.inches == 30.5
@@ -87,7 +87,7 @@ def test_decode_as_in_property():
 
 def test_decode_with_different_units():
     """Same data interpreted as different units gives different values."""
-    data = HeightData(b'\x02\xee')
+    data = HeightData(b"\x02\xee")
     mm_result = data.decode_as(Units.MM)
     in_result = data.decode_as(Units.IN)
 
@@ -126,7 +126,7 @@ def test_height_mm_encode_zero():
     height = HeightMM(0)
     data = height.encode
     assert isinstance(data, HeightData)
-    assert data.data == b'\x00\x00'
+    assert data.data == b"\x00\x00"
 
 
 def test_height_mm_encode_typical():
@@ -134,7 +134,7 @@ def test_height_mm_encode_typical():
     height = HeightMM(750)
     data = height.encode
     assert isinstance(data, HeightData)
-    assert data.data == b'\x02\xee'
+    assert data.data == b"\x02\xee"
 
 
 def test_height_mm_encode_maximum():
@@ -142,7 +142,7 @@ def test_height_mm_encode_maximum():
     height = HeightMM(65535)
     data = height.encode
     assert isinstance(data, HeightData)
-    assert data.data == b'\xff\xff'
+    assert data.data == b"\xff\xff"
 
 
 def test_height_mm_encode_decode_roundtrip():
@@ -174,7 +174,7 @@ def test_height_mm_encode_with_fractional():
     height = HeightMM(750.7)
     data = height.encode
     # int(750.7 / 256) = 2, int(750.7 % 256) = 238
-    assert data.data == b'\x02\xee'
+    assert data.data == b"\x02\xee"
 
 
 # =============================================================================
@@ -208,7 +208,7 @@ def test_height_in_encode_zero():
     height = HeightIn(0)
     data = height.encode
     assert isinstance(data, HeightData)
-    assert data.data == b'\x00\x00'
+    assert data.data == b"\x00\x00"
 
 
 def test_height_in_encode_typical():
@@ -217,7 +217,7 @@ def test_height_in_encode_typical():
     data = height.encode
     # 30.5 * 10 = 305 = 0x0131
     assert isinstance(data, HeightData)
-    assert data.data == b'\x01\x31'
+    assert data.data == b"\x01\x31"
 
 
 def test_height_in_encode_maximum():
@@ -226,7 +226,7 @@ def test_height_in_encode_maximum():
     height = HeightIn(6553.5)
     data = height.encode
     assert isinstance(data, HeightData)
-    assert data.data == b'\xff\xff'
+    assert data.data == b"\xff\xff"
 
 
 def test_height_in_encode_decode_roundtrip():
@@ -242,7 +242,7 @@ def test_height_in_tenth_inch_precision():
     height = HeightIn(29.7)
     data = height.encode
     # 29.7 * 10 = 297 = 0x0129
-    assert data.data == b'\x01\x29'
+    assert data.data == b"\x01\x29"
 
 
 def test_height_in_to_mm_to_in_roundtrip():
@@ -265,7 +265,7 @@ def test_height_in_encode_with_fractional_tenth():
     height = HeightIn(30.57)  # 305.7 tenth-inches
     data = height.encode
     # int(305.7 / 256) = 1, int(305.7 % 256) = 49
-    assert data.data == b'\x01\x31'
+    assert data.data == b"\x01\x31"
 
 
 # =============================================================================
@@ -278,11 +278,11 @@ def test_from_bytes_valid_minimal():
     # Minimal frame: DESK address, RAISE command, 0 params
     # Structure: [f1 f1] [01] [00] [checksum] [7e]
     # Checksum = (01 + 00) % 0x100 = 0x01
-    message = b'\xf1\xf1\x01\x00\x01\x7e'
+    message = b"\xf1\xf1\x01\x00\x01\x7e"
     frame = Frame.from_bytes(message)
 
     assert frame.command == DeskType.RAISE
-    assert frame.params == b''
+    assert frame.params == b""
     assert frame.address == Address.DESK
 
 
@@ -291,12 +291,12 @@ def test_from_bytes_valid_maximal():
     # Max params = 6 bytes
     # Structure: [f1 f1] [07] [06] [aa bb cc dd ee ff] [checksum] [7e]
     # Checksum = (07 + 06 + aa + bb + cc + dd + ee + ff) % 0x100
-    checksum = (0x07 + 0x06 + 0xaa + 0xbb + 0xcc + 0xdd + 0xee + 0xff) % 0x100
-    message = b'\xf1\xf1\x07\x06\xaa\xbb\xcc\xdd\xee\xff' + bytes([checksum]) + b'\x7e'
+    checksum = (0x07 + 0x06 + 0xAA + 0xBB + 0xCC + 0xDD + 0xEE + 0xFF) % 0x100
+    message = b"\xf1\xf1\x07\x06\xaa\xbb\xcc\xdd\xee\xff" + bytes([checksum]) + b"\x7e"
 
     frame = Frame.from_bytes(message)
     assert frame.command == DeskType.SETTINGS
-    assert frame.params == b'\xaa\xbb\xcc\xdd\xee\xff'
+    assert frame.params == b"\xaa\xbb\xcc\xdd\xee\xff"
 
 
 def test_from_bytes_with_params():
@@ -304,16 +304,16 @@ def test_from_bytes_with_params():
     # GOTO_HEIGHT with 2-byte height param
     # Structure: [f1 f1] [1b] [02] [02 ee] [checksum] [7e]
     # Checksum = (1b + 02 + 02 + ee) % 0x100 = 0x0d (27+2+2+238=269, 269%256=13)
-    message = b'\xf1\xf1\x1b\x02\x02\xee\x0d\x7e'
+    message = b"\xf1\xf1\x1b\x02\x02\xee\x0d\x7e"
 
     frame = Frame.from_bytes(message)
     assert frame.command == DeskType.GOTO_HEIGHT
-    assert frame.params == b'\x02\xee'
+    assert frame.params == b"\x02\xee"
 
 
 def test_from_bytes_desk_address():
     """Verify Address.DESK parsed correctly."""
-    message = b'\xf1\xf1\x01\x00\x01\x7e'
+    message = b"\xf1\xf1\x01\x00\x01\x7e"
     frame = Frame.from_bytes(message)
     assert frame.address == Address.DESK
 
@@ -323,7 +323,7 @@ def test_from_bytes_host_address():
     # HEIGHT response from desk to host
     # Structure: [f2 f2] [01] [02] [02 ee] [checksum] [7e]
     # Checksum = (01 + 02 + 02 + ee) % 0x100 = 0xf3 (1+2+2+238=243)
-    message = b'\xf2\xf2\x01\x02\x02\xee\xf3\x7e'
+    message = b"\xf2\xf2\x01\x02\x02\xee\xf3\x7e"
 
     frame = Frame.from_bytes(message)
     assert frame.command == HostType.HEIGHT
@@ -333,12 +333,12 @@ def test_from_bytes_host_address():
 def test_from_bytes_too_short():
     """Raise exception on message shorter than 6 bytes."""
     with pytest.raises(Exception, match="Message too short"):
-        Frame.from_bytes(b'\xf1\xf1\x01\x00\x01')
+        Frame.from_bytes(b"\xf1\xf1\x01\x00\x01")
 
 
 def test_from_bytes_too_long():
     """Raise exception on message longer than 12 bytes."""
-    message = b'\xf1\xf1\x01\x07\xaa\xbb\xcc\xdd\xee\xff\x00\x00\x7e'
+    message = b"\xf1\xf1\x01\x07\xaa\xbb\xcc\xdd\xee\xff\x00\x00\x7e"
     with pytest.raises(Exception, match="Message too long"):
         Frame.from_bytes(message)
 
@@ -347,14 +347,14 @@ def test_from_bytes_length_mismatch():
     """Raise exception when length byte doesn't match actual length."""
     # Says length=5 but only has 2 param bytes
     # Structure: [f1 f1] [01] [05] [aa bb] [checksum] [7e]
-    message = b'\xf1\xf1\x01\x05\xaa\xbb\x00\x7e'
+    message = b"\xf1\xf1\x01\x05\xaa\xbb\x00\x7e"
     with pytest.raises(Exception, match="Incorrect message length"):
         Frame.from_bytes(message)
 
 
 def test_from_bytes_bad_termination():
     """Raise exception when last byte is not 0x7e."""
-    message = b'\xf1\xf1\x01\x00\x01\xff'  # Last byte is 0xff not 0x7e
+    message = b"\xf1\xf1\x01\x00\x01\xff"  # Last byte is 0xff not 0x7e
     with pytest.raises(Exception, match="Message not terminated correctly"):
         Frame.from_bytes(message)
 
@@ -362,7 +362,7 @@ def test_from_bytes_bad_termination():
 def test_from_bytes_checksum_fail_off_by_one():
     """Raise exception when checksum is off by one."""
     # Correct checksum is 0x01, provide 0x02
-    message = b'\xf1\xf1\x01\x00\x02\x7e'
+    message = b"\xf1\xf1\x01\x00\x02\x7e"
     with pytest.raises(Exception, match="Checksum does not match"):
         Frame.from_bytes(message)
 
@@ -370,7 +370,7 @@ def test_from_bytes_checksum_fail_off_by_one():
 def test_from_bytes_checksum_fail_zero():
     """Raise exception when checksum is 0x00 but should be non-zero."""
     # Checksum should be 0x01
-    message = b'\xf1\xf1\x01\x00\x00\x7e'
+    message = b"\xf1\xf1\x01\x00\x00\x7e"
     with pytest.raises(Exception, match="Checksum does not match"):
         Frame.from_bytes(message)
 
@@ -379,8 +379,8 @@ def test_from_bytes_invalid_desk_command():
     """Raise exception for unknown DeskType value."""
     # 0xff is not a valid DeskType
     # Structure: [f1 f1] [ff] [00] [checksum] [7e]
-    checksum = (0xff + 0x00) % 0x100
-    message = b'\xf1\xf1\xff\x00' + bytes([checksum]) + b'\x7e'
+    checksum = (0xFF + 0x00) % 0x100
+    message = b"\xf1\xf1\xff\x00" + bytes([checksum]) + b"\x7e"
 
     with pytest.raises(ValueError, match="0xff is not a valid DeskType"):
         Frame.from_bytes(message)
@@ -390,8 +390,8 @@ def test_from_bytes_invalid_host_command():
     """Raise exception for unknown HostType value."""
     # 0xaa is not a valid HostType
     # Structure: [f2 f2] [aa] [00] [checksum] [7e]
-    checksum = (0xaa + 0x00) % 0x100
-    message = b'\xf2\xf2\xaa\x00' + bytes([checksum]) + b'\x7e'
+    checksum = (0xAA + 0x00) % 0x100
+    message = b"\xf2\xf2\xaa\x00" + bytes([checksum]) + b"\x7e"
 
     with pytest.raises(ValueError, match="0xaa is not a valid HostType"):
         Frame.from_bytes(message)
@@ -400,7 +400,7 @@ def test_from_bytes_invalid_host_command():
 def test_from_bytes_invalid_address():
     """Raise exception for unknown address value."""
     # 0xf3f3 is not a valid Address
-    message = b'\xf3\xf3\x01\x00\x01\x7e'
+    message = b"\xf3\xf3\x01\x00\x01\x7e"
     with pytest.raises(ValueError):
         Frame.from_bytes(message)
 
@@ -410,10 +410,10 @@ def test_from_bytes_extract_params():
     # Message with 4 bytes of params
     # Structure: [f1 f1] [07] [04] [11 22 33 44] [checksum] [7e]
     checksum = (0x07 + 0x04 + 0x11 + 0x22 + 0x33 + 0x44) % 0x100
-    message = b'\xf1\xf1\x07\x04\x11\x22\x33\x44' + bytes([checksum]) + b'\x7e'
+    message = b"\xf1\xf1\x07\x04\x11\x22\x33\x44" + bytes([checksum]) + b"\x7e"
 
     frame = Frame.from_bytes(message)
-    assert frame.params == b'\x11\x22\x33\x44'
+    assert frame.params == b"\x11\x22\x33\x44"
     assert len(frame.params) == 4
 
 
@@ -422,11 +422,11 @@ def test_from_bytes_checksum_calculation():
     # Create a message where we know the checksum
     # Structure: [f1 f1] [01] [02] [aa bb] [checksum] [7e]
     # Checksum = (01 + 02 + aa + bb) % 0x100 = 0x68 (1+2+170+187=360, 360%256=104)
-    message = b'\xf1\xf1\x01\x02\xaa\xbb\x68\x7e'
+    message = b"\xf1\xf1\x01\x02\xaa\xbb\x68\x7e"
 
     frame = Frame.from_bytes(message)
     assert frame.command == DeskType.RAISE
-    assert frame.params == b'\xaa\xbb'
+    assert frame.params == b"\xaa\xbb"
 
 
 # =============================================================================
@@ -440,7 +440,7 @@ def test_to_bytes_minimal_desk_frame():
     result = frame.to_bytes()
 
     # Expected: [f1 f1] [01] [00] [01] [7e]
-    assert result == b'\xf1\xf1\x01\x00\x01\x7e'
+    assert result == b"\xf1\xf1\x01\x00\x01\x7e"
     assert len(result) == 6
 
 
@@ -450,69 +450,71 @@ def test_to_bytes_minimal_host_frame():
     result = frame.to_bytes()
 
     # Expected: [f2 f2] [01] [00] [01] [7e]
-    assert result == b'\xf2\xf2\x01\x00\x01\x7e'
+    assert result == b"\xf2\xf2\x01\x00\x01\x7e"
     assert len(result) == 6
 
 
 def test_to_bytes_with_params():
     """Serialize frame with parameters."""
-    frame = Frame(command=DeskType.GOTO_HEIGHT, params=b'\x02\xee')
+    frame = Frame(command=DeskType.GOTO_HEIGHT, params=b"\x02\xee")
     result = frame.to_bytes()
 
     # Expected: [f1 f1] [1b] [02] [02 ee] [checksum] [7e]
     # Checksum = (1b + 02 + 02 + ee) % 0x100 = 0x0d
-    assert result == b'\xf1\xf1\x1b\x02\x02\xee\x0d\x7e'
+    assert result == b"\xf1\xf1\x1b\x02\x02\xee\x0d\x7e"
 
 
 def test_to_bytes_max_params():
     """Serialize frame with 6 bytes of params (maximum)."""
-    frame = Frame(command=DeskType.SETTINGS, params=b'\xaa\xbb\xcc\xdd\xee\xff')
+    frame = Frame(command=DeskType.SETTINGS, params=b"\xaa\xbb\xcc\xdd\xee\xff")
     result = frame.to_bytes()
 
     # Verify length and structure
     assert len(result) == 12
-    assert result[0:2] == b'\xf1\xf1'  # DESK address
+    assert result[0:2] == b"\xf1\xf1"  # DESK address
     assert result[2] == 0x07  # SETTINGS command
     assert result[3] == 0x06  # param length
-    assert result[4:10] == b'\xaa\xbb\xcc\xdd\xee\xff'  # params
-    assert result[-1] == 0x7e  # terminator
+    assert result[4:10] == b"\xaa\xbb\xcc\xdd\xee\xff"  # params
+    assert result[-1] == 0x7E  # terminator
 
 
 def test_to_bytes_params_too_long():
     """Raise exception when params exceed 6 bytes."""
-    frame = Frame(command=DeskType.SETTINGS, params=b'\xaa\xbb\xcc\xdd\xee\xff\x00')
+    frame = Frame(command=DeskType.SETTINGS, params=b"\xaa\xbb\xcc\xdd\xee\xff\x00")
 
-    with pytest.raises(ValueError, match="Parameter length of 7 longer than maximum of 6"):
+    with pytest.raises(
+        ValueError, match="Parameter length of 7 longer than maximum of 6"
+    ):
         frame.to_bytes()
 
 
 def test_to_bytes_checksum_correctness():
     """Verify checksum is calculated correctly."""
-    frame = Frame(command=DeskType.RAISE, params=b'\xaa\xbb')
+    frame = Frame(command=DeskType.RAISE, params=b"\xaa\xbb")
     result = frame.to_bytes()
 
     # Checksum should be sum of bytes[2:-2] % 0x100
     # bytes[2:-2] = [01, 02, aa, bb]
-    expected_checksum = (0x01 + 0x02 + 0xaa + 0xbb) % 0x100
+    expected_checksum = (0x01 + 0x02 + 0xAA + 0xBB) % 0x100
     assert result[-2] == expected_checksum
 
 
 def test_to_bytes_structure():
     """Verify byte structure is correct (address, cmd, len, params, chk, term)."""
-    frame = Frame(command=DeskType.GOTO_HEIGHT, params=b'\x04\x56')
+    frame = Frame(command=DeskType.GOTO_HEIGHT, params=b"\x04\x56")
     result = frame.to_bytes()
 
-    assert result[0:2] == b'\xf1\xf1'  # Address (DESK)
-    assert result[2] == 0x1b  # Command (GOTO_HEIGHT)
+    assert result[0:2] == b"\xf1\xf1"  # Address (DESK)
+    assert result[2] == 0x1B  # Command (GOTO_HEIGHT)
     assert result[3] == 0x02  # Length (2 param bytes)
-    assert result[4:6] == b'\x04\x56'  # Params
+    assert result[4:6] == b"\x04\x56"  # Params
     # result[6] is checksum
-    assert result[7] == 0x7e  # Terminator
+    assert result[7] == 0x7E  # Terminator
 
 
 def test_to_bytes_encode_decode_roundtrip():
     """to_bytes followed by from_bytes should equal original."""
-    original = Frame(command=DeskType.GOTO_HEIGHT, params=b'\x02\xee')
+    original = Frame(command=DeskType.GOTO_HEIGHT, params=b"\x02\xee")
     encoded = original.to_bytes()
     decoded = Frame.from_bytes(encoded)
 
@@ -523,7 +525,7 @@ def test_to_bytes_encode_decode_roundtrip():
 
 def test_to_bytes_empty_params():
     """Serialize frame with explicitly empty params."""
-    frame = Frame(command=DeskType.RAISE, params=b'')
+    frame = Frame(command=DeskType.RAISE, params=b"")
     result = frame.to_bytes()
 
     assert result[3] == 0x00  # Length should be 0
@@ -586,11 +588,11 @@ def test_real_height_query_response():
     # Desk responds with current height in HOST frame
     # Structure: [f2 f2] [01] [02] [02 ee] [checksum] [7e]
     # Checksum = (01 + 02 + 02 + ee) % 0x100 = 0xf3
-    message = b'\xf2\xf2\x01\x02\x02\xee\xf3\x7e'
+    message = b"\xf2\xf2\x01\x02\x02\xee\xf3\x7e"
 
     frame = Frame.from_bytes(message)
     assert frame.command == HostType.HEIGHT
-    assert frame.params == b'\x02\xee'
+    assert frame.params == b"\x02\xee"
 
     # Decode height
     height_data = HeightData(frame.params)
@@ -603,7 +605,7 @@ def test_real_preset_get_response():
     # Preset 1 stored at 750mm
     # Structure: [f2 f2] [25] [02] [02 ee] [checksum] [7e]
     # Checksum = (25 + 02 + 02 + ee) % 0x100 = 0x17 (37+2+2+238=279, 279%256=23)
-    message = b'\xf2\xf2\x25\x02\x02\xee\x17\x7e'
+    message = b"\xf2\xf2\x25\x02\x02\xee\x17\x7e"
 
     frame = Frame.from_bytes(message)
     assert frame.command == HostType.POSITION_1
@@ -623,10 +625,10 @@ def test_real_goto_command():
     result = frame.to_bytes()
 
     # Verify structure
-    assert result[0:2] == b'\xf1\xf1'  # DESK address
-    assert result[2] == 0x1b  # GOTO_HEIGHT
+    assert result[0:2] == b"\xf1\xf1"  # DESK address
+    assert result[2] == 0x1B  # GOTO_HEIGHT
     assert result[3] == 0x02  # 2 param bytes
-    assert result[4:6] == b'\x04\x4c'  # 1100 = 4*256 + 76
+    assert result[4:6] == b"\x04\x4c"  # 1100 = 4*256 + 76
 
 
 def test_height_boundary_values():
@@ -660,16 +662,16 @@ def test_checksum_rollover():
     # Structure: [f1 f1] [07] [04] [80 80 80 80] [checksum] [7e]
     # Sum = 07 + 04 + 80 + 80 + 80 + 80 = 0x20B
     # Checksum = 0x20B % 0x100 = 0x0B
-    frame = Frame(command=DeskType.SETTINGS, params=b'\x80\x80\x80\x80')
+    frame = Frame(command=DeskType.SETTINGS, params=b"\x80\x80\x80\x80")
     result = frame.to_bytes()
 
-    assert result[-2] == 0x0b
+    assert result[-2] == 0x0B
 
 
 def test_params_empty_vs_zero_length():
     """Distinguish between empty params and zero-length params field."""
     frame1 = Frame(command=DeskType.RAISE)
-    frame2 = Frame(command=DeskType.RAISE, params=b'')
+    frame2 = Frame(command=DeskType.RAISE, params=b"")
 
     result1 = frame1.to_bytes()
     result2 = frame2.to_bytes()

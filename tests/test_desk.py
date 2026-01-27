@@ -4,7 +4,7 @@ This demonstrates how to test async BLE operations using mocks.
 """
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 import pytest_asyncio
@@ -134,7 +134,7 @@ async def test_context_manager(desk, mock_bleak_client_class):
 async def test_disconnect_callback_clears_cache(desk):
     """Test that disconnect callback clears the cache."""
     # Populate cache
-    frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     desk._connection_cache[HostType.HEIGHT] = frame
 
     # Trigger disconnect callback
@@ -157,8 +157,7 @@ async def test_send_frame(connected_desk, mock_bleak_client_class):
 
     expected_bytes = frame.to_bytes()
     mock_bleak_client_class.write_gatt_char.assert_awaited_with(
-        desk_attribute_write,
-        expected_bytes
+        desk_attribute_write, expected_bytes
     )
 
 
@@ -185,7 +184,7 @@ async def test_wake(connected_desk, mock_bleak_client_class):
 async def test_data_callback_valid_frame(desk):
     """Test receiving valid frame data."""
     # Create a valid HEIGHT response
-    frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     frame_bytes = frame.to_bytes()
 
     # Mock the characteristic
@@ -206,7 +205,7 @@ async def test_data_callback_invalid_frame(desk):
     mock_char.uuid = "99fa0001-338a-1024-8a49-009c0215f78a"
 
     # Send invalid data (too short)
-    await desk._data_callback(mock_char, bytearray(b'\xf1\xf1'))
+    await desk._data_callback(mock_char, bytearray(b"\xf1\xf1"))
 
     # Should not crash, cache should be empty
     assert len(desk._connection_cache) == 0
@@ -218,7 +217,7 @@ async def test_data_callback_wrong_uuid(desk):
     mock_char = Mock()
     mock_char.uuid = "wrong-uuid"
 
-    frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     await desk._data_callback(mock_char, bytearray(frame.to_bytes()))
 
     # Should be ignored
@@ -228,7 +227,7 @@ async def test_data_callback_wrong_uuid(desk):
 @pytest.mark.asyncio
 async def test_valid_frame_callback_updates_cache(desk):
     """Test that valid frame callback updates cache."""
-    frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
 
     await desk._valid_frame_callback(frame)
 
@@ -242,7 +241,7 @@ async def test_valid_frame_callback_notifies_subscribers(desk):
     # Subscribe to frames
     queue = desk._subscribe()
 
-    frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     await desk._valid_frame_callback(frame)
 
     # Give tasks a chance to run
@@ -286,21 +285,21 @@ async def test_get_frame_waits_for_specific_type(desk):
     await asyncio.sleep(0.01)
 
     # Send a different frame type first
-    await desk._valid_frame_callback(Frame(command=HostType.UNITS, params=b'\x00'))
+    await desk._valid_frame_callback(Frame(command=HostType.UNITS, params=b"\x00"))
     await asyncio.sleep(0.01)
 
     # Task should still be waiting
     assert not get_task.done()
 
     # Send the correct frame type
-    expected_frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    expected_frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     await desk._valid_frame_callback(expected_frame)
     await asyncio.sleep(0.01)
 
     # Now task should complete
     result = await get_task
     assert result.command == HostType.HEIGHT
-    assert result.params == b'\x02\xee'
+    assert result.params == b"\x02\xee"
 
 
 # =============================================================================
@@ -312,13 +311,11 @@ async def test_get_frame_waits_for_specific_type(desk):
 async def test_query_uses_cache(connected_desk, mock_bleak_client_class):
     """Test query uses cached response when available."""
     # Pre-populate cache
-    cached_frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    cached_frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     connected_desk._connection_cache[HostType.HEIGHT] = cached_frame
 
     result = await connected_desk.query(
-        send=Frame(command=DeskType.BLE_WAKE),
-        receive=HostType.HEIGHT,
-        from_cache=True
+        send=Frame(command=DeskType.BLE_WAKE), receive=HostType.HEIGHT, from_cache=True
     )
 
     # Should return cached frame without sending
@@ -331,7 +328,7 @@ async def test_query_uses_cache(connected_desk, mock_bleak_client_class):
 async def test_query_bypasses_cache(connected_desk, mock_bleak_client_class):
     """Test query with from_cache=False bypasses cache."""
     # Pre-populate cache
-    cached_frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    cached_frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     connected_desk._connection_cache[HostType.HEIGHT] = cached_frame
 
     # Start query that will wait for response
@@ -339,19 +336,19 @@ async def test_query_bypasses_cache(connected_desk, mock_bleak_client_class):
         connected_desk.query(
             send=Frame(command=DeskType.BLE_WAKE),
             receive=HostType.HEIGHT,
-            from_cache=False
+            from_cache=False,
         )
     )
 
     await asyncio.sleep(0.01)
 
     # Simulate receiving a response
-    new_frame = Frame(command=HostType.HEIGHT, params=b'\x04\x4c')
+    new_frame = Frame(command=HostType.HEIGHT, params=b"\x04\x4c")
     await connected_desk._valid_frame_callback(new_frame)
 
     result = await query_task
     # Should get new frame, not cached
-    assert result.params == b'\x04\x4c'
+    assert result.params == b"\x04\x4c"
 
 
 @pytest.mark.asyncio
@@ -362,14 +359,14 @@ async def test_query_sends_and_receives(connected_desk):
         connected_desk.query(
             send=Frame(command=DeskType.BLE_WAKE),
             receive=HostType.HEIGHT,
-            from_cache=False
+            from_cache=False,
         )
     )
 
     await asyncio.sleep(0.01)
 
     # Simulate response
-    response = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    response = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     await connected_desk._valid_frame_callback(response)
 
     result = await query_task
@@ -390,7 +387,7 @@ async def test_get_units(connected_desk):
     await asyncio.sleep(0.01)
 
     # Simulate UNITS response (MM mode)
-    response = Frame(command=HostType.UNITS, params=b'\x00')
+    response = Frame(command=HostType.UNITS, params=b"\x00")
     await connected_desk._valid_frame_callback(response)
 
     result = await units_task
@@ -404,7 +401,7 @@ async def test_get_units_inches(connected_desk):
 
     await asyncio.sleep(0.01)
 
-    response = Frame(command=HostType.UNITS, params=b'\x01')
+    response = Frame(command=HostType.UNITS, params=b"\x01")
     await connected_desk._valid_frame_callback(response)
 
     result = await units_task
@@ -421,12 +418,12 @@ async def test_get_height_mm(connected_desk):
 
     # Simulate UNITS response (MM mode)
     await connected_desk._valid_frame_callback(
-        Frame(command=HostType.UNITS, params=b'\x00')
+        Frame(command=HostType.UNITS, params=b"\x00")
     )
 
     # Simulate HEIGHT response (750mm = 0x02EE)
     await connected_desk._valid_frame_callback(
-        Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+        Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     )
 
     result = await height_task
@@ -442,12 +439,12 @@ async def test_get_height_mm_from_inches(connected_desk):
 
     # Desk in inches mode
     await connected_desk._valid_frame_callback(
-        Frame(command=HostType.UNITS, params=b'\x01')
+        Frame(command=HostType.UNITS, params=b"\x01")
     )
 
     # Height is 30.5 inches = 305 tenth-inches = 0x0131
     await connected_desk._valid_frame_callback(
-        Frame(command=HostType.HEIGHT, params=b'\x01\x31')
+        Frame(command=HostType.HEIGHT, params=b"\x01\x31")
     )
 
     result = await height_task
@@ -460,7 +457,7 @@ async def test_goto_mm_in_mm_mode(connected_desk, mock_bleak_client_class):
     """Test moving to specific height in MM mode."""
     # Pre-cache units as MM
     connected_desk._connection_cache[HostType.UNITS] = Frame(
-        command=HostType.UNITS, params=b'\x00'
+        command=HostType.UNITS, params=b"\x00"
     )
 
     await connected_desk.goto_mm(1100)
@@ -472,7 +469,7 @@ async def test_goto_mm_in_mm_mode(connected_desk, mock_bleak_client_class):
     frame = Frame.from_bytes(last_call_data)
 
     assert frame.command == DeskType.GOTO_HEIGHT
-    assert frame.params == b'\x04\x4c'
+    assert frame.params == b"\x04\x4c"
 
 
 @pytest.mark.asyncio
@@ -480,7 +477,7 @@ async def test_goto_mm_in_inches_mode(connected_desk, mock_bleak_client_class):
     """Test moving to specific height when desk is in inches mode."""
     # Pre-cache units as IN
     connected_desk._connection_cache[HostType.UNITS] = Frame(
-        command=HostType.UNITS, params=b'\x01'
+        command=HostType.UNITS, params=b"\x01"
     )
 
     await connected_desk.goto_mm(750)
@@ -517,12 +514,12 @@ async def test_get_preset_mm(connected_desk):
 
     # Simulate UNITS response
     await connected_desk._valid_frame_callback(
-        Frame(command=HostType.UNITS, params=b'\x00')
+        Frame(command=HostType.UNITS, params=b"\x00")
     )
 
     # Simulate POSITION_1 response (750mm)
     await connected_desk._valid_frame_callback(
-        Frame(command=HostType.POSITION_1, params=b'\x02\xee')
+        Frame(command=HostType.POSITION_1, params=b"\x02\xee")
     )
 
     result = await preset_task
@@ -548,12 +545,12 @@ async def test_get_preset_mm_all_presets(connected_desk):
 
         # Send units response
         await connected_desk._valid_frame_callback(
-            Frame(command=HostType.UNITS, params=b'\x00')
+            Frame(command=HostType.UNITS, params=b"\x00")
         )
 
         # Send preset position response (different height for each)
         height_value = 700 + (preset.value * 100)  # 800, 900, 1000, 1100
-        height_bytes = height_value.to_bytes(2, byteorder='big')
+        height_bytes = height_value.to_bytes(2, byteorder="big")
         await connected_desk._valid_frame_callback(
             Frame(command=host_type, params=height_bytes)
         )
@@ -573,7 +570,7 @@ async def test_multiple_subscribers(desk):
     queue1 = desk._subscribe()
     queue2 = desk._subscribe()
 
-    frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
+    frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
     await desk._valid_frame_callback(frame)
 
     await asyncio.sleep(0.01)
@@ -586,8 +583,8 @@ async def test_multiple_subscribers(desk):
 @pytest.mark.asyncio
 async def test_cache_persistence(desk):
     """Test that cache persists across queries."""
-    frame1 = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
-    frame2 = Frame(command=HostType.UNITS, params=b'\x00')
+    frame1 = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
+    frame2 = Frame(command=HostType.UNITS, params=b"\x00")
 
     await desk._valid_frame_callback(frame1)
     await desk._valid_frame_callback(frame2)
@@ -602,11 +599,11 @@ async def test_cache_persistence(desk):
 @pytest.mark.asyncio
 async def test_cache_update_on_new_frame(desk):
     """Test that cache updates when new frame of same type received."""
-    old_frame = Frame(command=HostType.HEIGHT, params=b'\x02\xee')
-    new_frame = Frame(command=HostType.HEIGHT, params=b'\x04\x4c')
+    old_frame = Frame(command=HostType.HEIGHT, params=b"\x02\xee")
+    new_frame = Frame(command=HostType.HEIGHT, params=b"\x04\x4c")
 
     await desk._valid_frame_callback(old_frame)
-    assert desk._connection_cache[HostType.HEIGHT].params == b'\x02\xee'
+    assert desk._connection_cache[HostType.HEIGHT].params == b"\x02\xee"
 
     await desk._valid_frame_callback(new_frame)
-    assert desk._connection_cache[HostType.HEIGHT].params == b'\x04\x4c'
+    assert desk._connection_cache[HostType.HEIGHT].params == b"\x04\x4c"
