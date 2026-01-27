@@ -1,7 +1,7 @@
 # Blesk
 
-[![Tests](https://github.com/danhall/blesk/actions/workflows/test.yml/badge.svg)](https://github.com/danhall/blesk/actions/workflows/test.yml)
-[![Code Quality](https://github.com/danhall/blesk/actions/workflows/lint.yml/badge.svg)](https://github.com/danhall/blesk/actions/workflows/lint.yml)
+[![Tests](https://github.com/smarthall/blesk/actions/workflows/test.yml/badge.svg)](https://github.com/smarthall/blesk/actions/workflows/test.yml)
+[![Code Quality](https://github.com/smarthall/blesk/actions/workflows/lint.yml/badge.svg)](https://github.com/smarthall/blesk/actions/workflows/lint.yml)
 
 A Python command-line tool for controlling Desky standing desks via Bluetooth Low Energy (BLE). Blesk provides a simple interface to adjust desk height, save and recall presets, and manage multiple desk configurations.
 
