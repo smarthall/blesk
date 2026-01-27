@@ -5,7 +5,6 @@ This tests the CLI commands and configuration management.
 
 import os
 import tempfile
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -135,11 +134,13 @@ async def test_deskconfig_get_desk_address_not_found(temp_config_file):
 
         # The current implementation has a bug - it crashes instead of returning None
         with pytest.raises(AttributeError):
-            desk = await config.get_desk()
+            await config.get_desk()
 
 
 @pytest.mark.asyncio
-async def test_deskconfig_get_desk_no_address_one_device(temp_config_file, mock_ble_device):
+async def test_deskconfig_get_desk_no_address_one_device(
+    temp_config_file, mock_ble_device
+):
     """Test get_desk with no address but one device found."""
     config = DeskConfig(configfile=temp_config_file)
 
@@ -155,7 +156,9 @@ async def test_deskconfig_get_desk_no_address_one_device(temp_config_file, mock_
 
 
 @pytest.mark.asyncio
-async def test_deskconfig_get_desk_no_address_multiple_devices(temp_config_file, mock_ble_device):
+async def test_deskconfig_get_desk_no_address_multiple_devices(
+    temp_config_file, mock_ble_device
+):
     """Test get_desk with no address and multiple devices found."""
     config = DeskConfig(configfile=temp_config_file)
 
@@ -207,6 +210,7 @@ def test_make_sync_decorator():
 
 def test_make_sync_preserves_function_name():
     """Test make_sync preserves original function name."""
+
     async def my_async_function():
         pass
 
@@ -260,7 +264,9 @@ def test_cli_custom_config_file(runner, temp_config_file):
 
 def test_cli_custom_profile(runner, temp_config_file):
     """Test CLI with custom profile."""
-    result = runner.invoke(cli, ["--profile", "custom", "--config", temp_config_file, "--help"])
+    result = runner.invoke(
+        cli, ["--profile", "custom", "--config", temp_config_file, "--help"]
+    )
 
     assert result.exit_code == 0
 
@@ -280,7 +286,7 @@ def test_go_preset_help(runner):
 
 def test_go_preset_invalid_preset(runner, temp_config_file):
     """Test go preset with invalid preset number."""
-    with patch("blesk.cli.DeskConfig.get_desk") as mock_get_desk:
+    with patch("blesk.cli.DeskConfig.get_desk"):
         result = runner.invoke(
             cli, ["--config", temp_config_file, "go", "preset", "99"]
         )
@@ -293,9 +299,7 @@ def test_go_preset_no_device(runner, temp_config_file):
     with patch("blesk.cli.DeskConfig.get_desk") as mock_get_desk:
         mock_get_desk.return_value = None
 
-        result = runner.invoke(
-            cli, ["--config", temp_config_file, "go", "preset", "1"]
-        )
+        result = runner.invoke(cli, ["--config", temp_config_file, "go", "preset", "1"])
 
         assert "Could not find any devices" in result.output
 
@@ -310,9 +314,7 @@ def test_go_preset_success(runner, temp_config_file):
     with patch("blesk.cli.DeskConfig.get_desk") as mock_get_desk:
         mock_get_desk.return_value = mock_desk
 
-        result = runner.invoke(
-            cli, ["--config", temp_config_file, "go", "preset", "1"]
-        )
+        result = runner.invoke(cli, ["--config", temp_config_file, "go", "preset", "1"])
 
         assert result.exit_code == 0
         mock_desk.goto_preset.assert_awaited_once()
@@ -454,7 +456,7 @@ def test_get_preset_help(runner):
 
 def test_get_preset_invalid_preset(runner, temp_config_file):
     """Test get preset with invalid preset number."""
-    with patch("blesk.cli.DeskConfig.get_desk") as mock_get_desk:
+    with patch("blesk.cli.DeskConfig.get_desk"):
         result = runner.invoke(
             cli, ["--config", temp_config_file, "get", "preset", "99"]
         )
