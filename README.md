@@ -46,20 +46,25 @@ poetry run blesk --help
 ## Quick Start
 
 1. **Discover available desks:**
+
    ```bash
    blesk list desks
    ```
 
 2. **Configure your desk:**
+
    ```bash
    blesk set desk <ADDRESS>
    ```
+
    Replace `<ADDRESS>` with your desk's Bluetooth address from the discovery output.
 
 3. **Move to a specific height:**
+
    ```bash
    blesk go height 1000
    ```
+
    This moves the desk to 1000mm (100cm).
 
 4. **Check current height:**
@@ -72,42 +77,54 @@ poetry run blesk --help
 ### Basic Commands
 
 #### List Available Desks
+
 ```bash
 blesk list desks
 ```
+
 Scans for nearby Desky desks and displays their Bluetooth addresses and names.
 
 #### Configure a Desk
+
 ```bash
 blesk set desk <ADDRESS>
 ```
+
 Sets the default desk to use for commands. The address is saved in your config file.
 
 #### Move to Height
+
 ```bash
 blesk go height <MILLIMETERS>
 ```
+
 Moves the desk to the specified height in millimeters.
 
 Example:
+
 ```bash
 blesk go height 750   # Sitting height (75cm)
 blesk go height 1150  # Standing height (115cm)
 ```
 
 #### Use Presets
+
 ```bash
 blesk go preset <1-4>
 ```
+
 Moves the desk to one of the saved presets (1-4).
 
 #### Get Current Height
+
 ```bash
 blesk get current
 ```
+
 Displays the current desk height in millimeters.
 
 #### Get Preset Heights
+
 ```bash
 blesk get preset all        # Get all preset heights
 blesk get preset <1-4>      # Get a specific preset
@@ -116,20 +133,26 @@ blesk get preset <1-4>      # Get a specific preset
 ### Advanced Options
 
 #### Profiles
+
 Manage multiple desks using different profiles:
+
 ```bash
 blesk --profile home go height 1000
 blesk --profile office go height 1000
 ```
 
 #### Custom Config File
+
 Specify a custom configuration file:
+
 ```bash
 blesk --config /path/to/config.ini set desk <ADDRESS>
 ```
 
 #### Debug Output
+
 Enable debug or verbose logging:
+
 ```bash
 blesk --debug get current
 blesk --verbose go height 1000
@@ -138,11 +161,13 @@ blesk --verbose go height 1000
 ## Configuration
 
 Configuration is stored in a platform-specific directory:
+
 - Linux: `~/.config/blesk/config.ini`
 - macOS: `~/Library/Application Support/blesk/config.ini`
 - Windows: `%LOCALAPPDATA%\blesk\config.ini`
 
 Example config file:
+
 ```ini
 [default]
 address = AA:BB:CC:DD:EE:FF
@@ -159,6 +184,7 @@ address = 77:88:99:AA:BB:CC
 ### Setup
 
 Clone the repository and install dependencies:
+
 ```bash
 git clone https://github.com/danhall/blesk.git
 cd blesk
@@ -172,6 +198,7 @@ poetry run pytest
 ```
 
 With coverage:
+
 ```bash
 poetry run pytest --cov=blesk
 ```
@@ -179,9 +206,16 @@ poetry run pytest --cov=blesk
 ### Code Quality
 
 This project uses Ruff for linting and formatting:
+
 ```bash
 poetry run ruff check .
 poetry run ruff format .
+```
+
+### Releasing
+
+```bash
+gh release create v0.1.0 --title "v0.1.0" --notes "Initial release" --latest
 ```
 
 ## Contributing
@@ -195,6 +229,7 @@ See the LICENSE file for details.
 ## Troubleshooting
 
 ### Desk Not Found
+
 - Ensure your desk is powered on and Bluetooth is enabled
 - Check that your Bluetooth adapter is working
 - Try increasing the scan timeout by running discovery multiple times
@@ -202,6 +237,7 @@ See the LICENSE file for details.
 ## Acknowledgments
 
 Built with:
+
 - [Bleak](https://github.com/hbldh/bleak) - Cross-platform BLE library
 - [Click](https://click.palletsprojects.com/) - Command-line interface framework
 - [Poetry](https://python-poetry.org/) - Dependency management
