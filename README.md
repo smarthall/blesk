@@ -199,14 +199,6 @@ See the LICENSE file for details.
 - Check that your Bluetooth adapter is working
 - Try increasing the scan timeout by running discovery multiple times
 
-### Permission Errors (Linux)
-On Linux, you may need to grant permissions for BLE access:
-```bash
-sudo setcap 'cap_net_raw,cap_net_admin+eip' $(which python)
-```
-
-Or run the application as root (not recommended for regular use).
-
 ## Acknowledgments
 
 Built with:
