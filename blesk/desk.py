@@ -20,13 +20,20 @@ logger = logging.getLogger(__name__)
 
 
 class Blesk:
-    def __init__(self, device: BLEDevice) -> None:
-        self._name = device.name
-        self._client = BleakClient(
-            device,
-            services=[desk_service_uuid],
-            disconnected_callback=self._disconnect_callback,
-        )
+    def __init__(self, device: BLEDevice | BleakClient) -> None:
+        if isinstance(device, BleakClient):
+            # Use the provided BleakClient directly
+            self._client = device
+            # Extract name from client if available, otherwise use address
+            self._name = getattr(device, "name", None) or device.address
+        else:
+            # Create a new BleakClient from BLEDevice
+            self._name = device.name
+            self._client = BleakClient(
+                device,
+                services=[desk_service_uuid],
+                disconnected_callback=self._disconnect_callback,
+            )
 
         self._listeners: list[asyncio.Queue] = []
         self._connection_cache: dict[HostType, Frame] = {}
