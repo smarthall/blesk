@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 
 class Blesk:
     def __init__(self, device: BLEDevice | BleakClient) -> None:
-        if isinstance(device, BleakClient):
+        # Check if we received a BleakClient instance
+        # We need to check the type name since BleakClient might be mocked in tests
+        if hasattr(device, "write_gatt_char") and hasattr(device, "start_notify"):
             # Use the provided BleakClient directly
             self._client = device
             # Extract name from client if available, otherwise use address
