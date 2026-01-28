@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "blesk"
-version = "0.1.0"
+version = "0.2.2"
 description = "Controls a standing desk using BLE"
 authors = ["Daniel Hall <blesk@danielhall.me>"]
 readme = "README.md"
@@ -31,6 +31,7 @@ pytest = "^9.0.0"
 pytest-asyncio = "^1.0.0"
 pytest-cov = "^7.0.0"
 ruff = "^0.14.14"
+pre-commit = "^4.5.1"
 
 [tool.poetry.scripts]
 blesk = "blesk.cli:cli"
