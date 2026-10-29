@@ -3,5 +3,13 @@
   "extends": [
     "config:recommended",
     ":automergeAll"
+  ],
+  "packageRules": [
+    {
+      "description": "Never automerge Python version updates - they change the range of supported interpreters",
+      "matchPackageNames": ["python"],
+      "automerge": false,
+      "platformAutomerge": false
+    }
   ]
 }
