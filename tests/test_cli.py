@@ -14,7 +14,6 @@ from click.testing import CliRunner
 from blesk.cli import DeskConfig, cli, make_sync
 from blesk.protocol import LightColor, Preset
 
-
 # =============================================================================
 # Fixtures
 # =============================================================================

@@ -14,7 +14,6 @@ from blesk.const import desk_attribute_notify, desk_attribute_write
 from blesk.desk import Blesk
 from blesk.protocol import DeskType, Frame, HostType, LightColor, Preset, Units
 
-
 # =============================================================================
 # Fixtures
 # =============================================================================

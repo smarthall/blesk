@@ -4,17 +4,18 @@ import logging
 from bleak import BleakClient, BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 
-from .const import desk_service_uuid, desk_attribute_notify, desk_attribute_write
+from .const import desk_attribute_notify, desk_attribute_write, desk_service_uuid
 from .protocol import (
-    Frame,
     DeskType,
+    Frame,
     HeightData,
+    HeightMM,
     HostType,
     LightColor,
     Preset,
-    Units,
     PresetDict,
-    HeightMM,
+    ProtocolError,
+    Units,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,7 @@ class Blesk:
         try:
             frame = Frame.from_bytes(data)
             logger.debug(f"Frame received from {self.address}: {frame}")
-        except Exception as e:
+        except (ProtocolError, ValueError) as e:
             logger.warning(
                 f'Exception while parsing message "{data.hex()}" from {self.address}: {e}'
             )
@@ -135,7 +136,7 @@ class Blesk:
             q.task_done()
 
     async def query(self, send: Frame, receive: HostType, from_cache=True):
-        if from_cache and receive in self._connection_cache.keys():
+        if from_cache and receive in self._connection_cache:
             logger.debug(f"Message type {receive} retrived from cache")
             return self._connection_cache[receive]
 

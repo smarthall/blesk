@@ -1,17 +1,17 @@
 import asyncio
-import functools
 import configparser
+import functools
 import logging
-from bleak import BleakScanner
-import click
 import os
+
+import click
+from bleak import BleakScanner
+from platformdirs import PlatformDirs
 
 from blesk.desk import Blesk
 
 from .discover import discover
 from .protocol import LightColor, Preset
-
-from platformdirs import PlatformDirs
 
 dirs = PlatformDirs("blesk", "smarthall", ensure_exists=True)
 
@@ -192,14 +192,11 @@ async def get_preset(config: DeskConfig, preset: str):
 
     PRESET is the number of the preset, or 'all' to get all presets.
     """
-    get_list = []
-
     if preset == "all":
-        for p in Preset:
-            get_list.append(p)
+        get_list = [p for p in Preset]
     else:
         try:
-            get_list.append(Preset(int(preset)))
+            get_list = [Preset(int(preset))]
         except ValueError:
             print(f"{preset} is not a valid preset")
             return

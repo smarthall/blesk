@@ -1,6 +1,7 @@
 """Comprehensive unit tests for blesk.protocol module."""
 
 import pytest
+
 from blesk.protocol import (
     Address,
     DeskType,
@@ -10,9 +11,9 @@ from blesk.protocol import (
     HeightMM,
     HostType,
     LightColor,
+    ProtocolError,
     Units,
 )
-
 
 # =============================================================================
 # HeightData Tests
@@ -334,14 +335,14 @@ def test_from_bytes_host_address():
 
 def test_from_bytes_too_short():
     """Raise exception on message shorter than 6 bytes."""
-    with pytest.raises(Exception, match="Message too short"):
+    with pytest.raises(ProtocolError, match="Message too short"):
         Frame.from_bytes(b"\xf1\xf1\x01\x00\x01")
 
 
 def test_from_bytes_too_long():
     """Raise exception on message longer than 12 bytes."""
     message = b"\xf1\xf1\x01\x07\xaa\xbb\xcc\xdd\xee\xff\x00\x00\x7e"
-    with pytest.raises(Exception, match="Message too long"):
+    with pytest.raises(ProtocolError, match="Message too long"):
         Frame.from_bytes(message)
 
 
@@ -350,14 +351,14 @@ def test_from_bytes_length_mismatch():
     # Says length=5 but only has 2 param bytes
     # Structure: [f1 f1] [01] [05] [aa bb] [checksum] [7e]
     message = b"\xf1\xf1\x01\x05\xaa\xbb\x00\x7e"
-    with pytest.raises(Exception, match="Incorrect message length"):
+    with pytest.raises(ProtocolError, match="Incorrect message length"):
         Frame.from_bytes(message)
 
 
 def test_from_bytes_bad_termination():
     """Raise exception when last byte is not 0x7e."""
     message = b"\xf1\xf1\x01\x00\x01\xff"  # Last byte is 0xff not 0x7e
-    with pytest.raises(Exception, match="Message not terminated correctly"):
+    with pytest.raises(ProtocolError, match="Message not terminated correctly"):
         Frame.from_bytes(message)
 
 
@@ -365,7 +366,7 @@ def test_from_bytes_checksum_fail_off_by_one():
     """Raise exception when checksum is off by one."""
     # Correct checksum is 0x01, provide 0x02
     message = b"\xf1\xf1\x01\x00\x02\x7e"
-    with pytest.raises(Exception, match="Checksum does not match"):
+    with pytest.raises(ProtocolError, match="Checksum does not match"):
         Frame.from_bytes(message)
 
 
@@ -373,7 +374,7 @@ def test_from_bytes_checksum_fail_zero():
     """Raise exception when checksum is 0x00 but should be non-zero."""
     # Checksum should be 0x01
     message = b"\xf1\xf1\x01\x00\x00\x7e"
-    with pytest.raises(Exception, match="Checksum does not match"):
+    with pytest.raises(ProtocolError, match="Checksum does not match"):
         Frame.from_bytes(message)
 
 

@@ -1,5 +1,4 @@
 import logging
-
 from collections import namedtuple
 from dataclasses import dataclass
 from enum import Enum
@@ -11,6 +10,10 @@ header_length = 6
 minimum_length = 6
 maximum_length = 12
 maximum_param_length = maximum_length - header_length
+
+
+class ProtocolError(Exception):
+    """Raised when raw bytes cannot be parsed into a valid :class:`Frame`."""
 
 
 class Address(Enum):
@@ -207,24 +210,24 @@ class Frame:
     def from_bytes(cls, message_bytes: bytes):
         # Length test
         if len(message_bytes) < 6:
-            raise Exception("Message too short")
+            raise ProtocolError("Message too short")
 
         if len(message_bytes) > 12:
-            raise Exception("Message too long")
+            raise ProtocolError("Message too long")
 
         length = message_bytes[3]
         if len(message_bytes) != length + 6:
-            raise Exception("Incorrect message length")
+            raise ProtocolError("Incorrect message length")
 
         # Message end
         if message_bytes[-1] != end_of_message:
-            raise Exception("Message not terminated correctly")
+            raise ProtocolError("Message not terminated correctly")
 
         # Checksum
         msg_chk = message_bytes[-2]
         clc_chk = sum(message_bytes[2:-2]) % 0x100
         if msg_chk != clc_chk:
-            raise Exception(
+            raise ProtocolError(
                 f"Checksum does not match, expected 0x{clc_chk:02x} but got 0x{msg_chk:02x}."
             )
 
