@@ -155,6 +155,31 @@ class Blesk:
         """
         await self.send_frame(Frame(command=DeskType.STOP))
 
+    async def get_lock(self) -> bool:
+        """Return the child-lock state (True = locked).
+
+        ``0xB2`` is overloaded on the desk: with no payload it queries the
+        child lock (and doubles as the wake that starts the height stream).
+        The reply is already captured during ``connect`` (the wake doubles as
+        a lock query), so this normally returns from the cache.
+        """
+        frame = await self.query(
+            send=Frame(command=DeskType.BLE_WAKE), receive=HostType.BLE_WAKE_RESP
+        )
+        return bool(frame.params[0])
+
+    async def set_lock(self, locked: bool) -> None:
+        """Set the child lock (``locked=True``) or clear it (``locked=False``).
+
+        The desk echoes the new state as a notification immediately, which
+        updates the cache for subsequent ``get_lock`` calls. Note that the
+        lock only guards the physical panel and the reference app's UI; it does
+        not block BLE movement frames.
+        """
+        await self.send_frame(
+            Frame(command=DeskType.BLE_WAKE, params=bytes([int(locked)]))
+        )
+
     async def connect(self):
         await self._client.connect()
         await self._client.start_notify(

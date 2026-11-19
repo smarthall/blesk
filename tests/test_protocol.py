@@ -551,6 +551,28 @@ def test_from_bytes_stop():
     assert frame.address == Address.DESK
 
 
+def test_to_bytes_set_lock_locked():
+    """The 0xB2 set-lock (locked) frame must match the reference exactly."""
+    frame = Frame(command=DeskType.BLE_WAKE, params=b"\x01")
+    # F1 F1 B2 01 01 B4 7E (checksum B2 + 01 + 01 = B4)
+    assert frame.to_bytes() == b"\xf1\xf1\xb2\x01\x01\xb4\x7e"
+
+
+def test_to_bytes_set_lock_unlocked():
+    """The 0xB2 unlock frame must match the reference exactly."""
+    frame = Frame(command=DeskType.BLE_WAKE, params=b"\x00")
+    # F1 F1 B2 01 00 B3 7E (checksum B2 + 01 + 00 = B3)
+    assert frame.to_bytes() == b"\xf1\xf1\xb2\x01\x00\xb3\x7e"
+
+
+def test_from_bytes_lock_state():
+    """Parse the lock-state notification (F2 F2 B2 01 <state>)."""
+    frame = Frame.from_bytes(b"\xf2\xf2\xb2\x01\x01\xb4\x7e")
+
+    assert frame.command == HostType.BLE_WAKE_RESP
+    assert frame.params == b"\x01"
+
+
 # =============================================================================
 # Frame.address Property Tests
 # =============================================================================

@@ -185,6 +185,63 @@ async def test_stop(connected_desk, mock_bleak_client_class):
     assert frame.command == DeskType.STOP
 
 
+@pytest.mark.asyncio
+async def test_get_lock_locked(connected_desk):
+    """get_lock returns True when the desk reports locked."""
+    lock_task = asyncio.create_task(connected_desk.get_lock())
+    await asyncio.sleep(0.01)
+
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.BLE_WAKE_RESP, params=b"\x01")
+    )
+
+    assert (await lock_task) is True
+
+
+@pytest.mark.asyncio
+async def test_get_lock_unlocked(connected_desk):
+    """get_lock returns False when the desk reports unlocked."""
+    lock_task = asyncio.create_task(connected_desk.get_lock())
+    await asyncio.sleep(0.01)
+
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.BLE_WAKE_RESP, params=b"\x00")
+    )
+
+    assert (await lock_task) is False
+
+
+@pytest.mark.asyncio
+async def test_set_lock_locked(connected_desk, mock_bleak_client_class):
+    """set_lock(True) sends the documented 0xB2 set-lock frame."""
+    await connected_desk.set_lock(True)
+
+    last = mock_bleak_client_class.write_gatt_char.await_args_list[-1][0][1]
+    assert last == b"\xf1\xf1\xb2\x01\x01\xb4\x7e"
+
+
+@pytest.mark.asyncio
+async def test_set_lock_unlocked(connected_desk, mock_bleak_client_class):
+    """set_lock(False) sends the documented 0xB2 unlock frame."""
+    await connected_desk.set_lock(False)
+
+    last = mock_bleak_client_class.write_gatt_char.await_args_list[-1][0][1]
+    assert last == b"\xf1\xf1\xb2\x01\x00\xb3\x7e"
+
+
+@pytest.mark.asyncio
+async def test_set_lock_then_get_reflects_state(connected_desk):
+    """A set_lock reply updates the cache that get_lock reads from."""
+    # Simulate the desk echoing the new (locked) state after a set.
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.BLE_WAKE_RESP, params=b"\x01")
+    )
+
+    # Now get_lock should be served from the cache (the new value).
+    result = await connected_desk.get_lock()
+    assert result is True
+
+
 # =============================================================================
 # Frame Receiving and Callback Tests
 # =============================================================================
