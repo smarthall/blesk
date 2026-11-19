@@ -10,7 +10,7 @@ import pytest
 import pytest_asyncio
 from bleak.backends.device import BLEDevice
 
-from blesk.const import desk_attribute_read, desk_attribute_write
+from blesk.const import desk_attribute_notify, desk_attribute_write
 from blesk.desk import Blesk
 from blesk.protocol import DeskType, Frame, HostType, Preset, Units
 
@@ -199,7 +199,7 @@ async def test_data_callback_valid_frame(desk):
 
     # Mock the characteristic
     mock_char = Mock()
-    mock_char.uuid = desk_attribute_read
+    mock_char.uuid = desk_attribute_notify
 
     await desk._data_callback(mock_char, bytearray(frame_bytes))
 

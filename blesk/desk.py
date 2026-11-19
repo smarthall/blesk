@@ -4,7 +4,7 @@ import logging
 from bleak import BleakClient, BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 
-from .const import desk_service_uuid, desk_attribute_read, desk_attribute_write
+from .const import desk_service_uuid, desk_attribute_notify, desk_attribute_write
 from .protocol import (
     Frame,
     DeskType,
@@ -56,7 +56,7 @@ class Blesk:
         self, sender: BleakGATTCharacteristic, data: bytearray
     ) -> None:
         # Check the message is from where we expect
-        if sender.uuid != desk_attribute_read:
+        if sender.uuid != desk_attribute_notify:
             logger.warning(f"Received unexpected data from service: {sender}")
             return
 
@@ -158,7 +158,7 @@ class Blesk:
     async def connect(self):
         await self._client.connect()
         await self._client.start_notify(
-            char_specifier=desk_attribute_read, callback=self._data_callback
+            char_specifier=desk_attribute_notify, callback=self._data_callback
         )
         await self.wake()
 
