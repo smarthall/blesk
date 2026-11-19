@@ -33,6 +33,11 @@ pytest-asyncio = "^1.0.0"
 pytest-cov = "^7.0.0"
 ruff = "^0.17.0"
 pre-commit = "^4.5.1"
+# Explicitly pinned so Renovate tracks them and they can't silently regress
+# below the versions that fix known CVEs (they're transitive via pre-commit/pytest).
+virtualenv = "^21"
+filelock = "^4"
+pygments = "^2.20"
 
 [tool.poetry.scripts]
 blesk = "blesk.cli:cli"
