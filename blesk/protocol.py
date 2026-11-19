@@ -125,7 +125,8 @@ class HeightMM:
 
     @property
     def as_in(self) -> "HeightIn":
-        return HeightIn(self.mm * 0.0393701)
+        # 1 inch = 25.4 mm exactly (the desk's inch scale is tenths of an inch).
+        return HeightIn(self.mm / 25.4)
 
     @property
     def encode(self) -> HeightData:
@@ -147,7 +148,7 @@ class HeightIn:
 
     @property
     def as_mm(self) -> "HeightMM":
-        return HeightMM(self.inches / 0.0393701)
+        return HeightMM(self.inches * 25.4)
 
     @property
     def as_in(self) -> "HeightIn":
@@ -155,12 +156,15 @@ class HeightIn:
 
     @property
     def encode(self) -> HeightData:
+        # The desk stores tenths of an inch; round to the nearest tenth rather
+        # than truncating, so the sent value is the closest representable one.
+        tenths = round(self.inches * 10)
+
         data = bytearray(2)
+        data[0] = (tenths >> 8) & 0xFF
+        data[1] = tenths & 0xFF
 
-        data[0] = int(self.inches * 10 / 0x100)
-        data[1] = int(self.inches * 10 % 0x100)
-
-        return HeightData(data)
+        return HeightData(bytes(data))
 
 
 @dataclass

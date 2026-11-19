@@ -113,12 +113,13 @@ def test_height_mm_as_mm_identity():
 
 
 def test_height_mm_as_in_conversion():
-    """Test MM to IN conversion using 0.0393701 factor."""
+    """Test MM to IN conversion using the exact 1 inch = 25.4 mm factor."""
     height = HeightMM(750.0)
     result = height.as_in
     assert isinstance(result, HeightIn)
-    # 750mm * 0.0393701 ≈ 29.527575 inches
-    assert abs(result.inches - 29.527575) < 0.00001
+    # 750mm / 25.4 = 29.5275590... inches (exact, replacing the old 0.0393701
+    # approximation).
+    assert abs(result.inches - (750 / 25.4)) < 1e-9
 
 
 def test_height_mm_encode_zero():
@@ -195,11 +196,11 @@ def test_height_in_as_in_identity():
 
 
 def test_height_in_as_mm_conversion():
-    """Test IN to MM conversion (1 / 0.0393701 factor)."""
+    """Test IN to MM conversion (1 inch = 25.4 mm)."""
     height = HeightIn(30.0)
     result = height.as_mm
     assert isinstance(result, HeightMM)
-    # 30 inches / 0.0393701 ≈ 762mm
+    # 30 inches * 25.4 = 762mm
     assert abs(result.mm - 762.0) < 0.1
 
 
@@ -253,19 +254,19 @@ def test_height_in_to_mm_to_in_roundtrip():
 
 
 def test_height_in_conversion_factor():
-    """Verify the conversion factor 1/0.0393701."""
+    """Verify the conversion factor 1 inch = 25.4 mm."""
     height_in = HeightIn(1.0)
     height_mm = height_in.as_mm
-    # 1 inch = 25.4mm (approximately 1/0.0393701)
+    # 1 inch = 25.4mm exactly
     assert abs(height_mm.mm - 25.4) < 0.01
 
 
 def test_height_in_encode_with_fractional_tenth():
-    """Encoding values with fractional tenths gets truncated."""
-    height = HeightIn(30.57)  # 305.7 tenth-inches
+    """Encoding values with fractional tenths rounds to the nearest tenth."""
+    height = HeightIn(30.57)  # 305.7 tenth-inches -> rounds to 306
     data = height.encode
-    # int(305.7 / 256) = 1, int(305.7 % 256) = 49
-    assert data.data == b"\x01\x31"
+    # 306 = 1*256 + 50 = 0x0132 (rounded, not truncated as before)
+    assert data.data == b"\x01\x32"
 
 
 # =============================================================================
