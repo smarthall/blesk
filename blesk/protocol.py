@@ -76,6 +76,8 @@ class DeskType(Enum):
     MOVE_3 = 0x27
     MOVE_4 = 0x28
 
+    STOP = 0x2B
+
     BLE_WAKE = 0xB2
 
 

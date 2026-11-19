@@ -146,6 +146,15 @@ class Blesk:
     async def wake(self):
         await self.send_frame(Frame(command=DeskType.BLE_WAKE))
 
+    async def stop(self):
+        """Stop desk movement.
+
+        The desk does not stop instantly: the height stream runs at ~5 Hz and
+        the desk coasts briefly after this command, so a controller should
+        allow for a few centimetres of overshoot.
+        """
+        await self.send_frame(Frame(command=DeskType.STOP))
+
     async def connect(self):
         await self._client.connect()
         await self._client.start_notify(
@@ -185,6 +194,10 @@ class Blesk:
         return HeightData(frame.params[0:2]).decode_as(units).as_mm.as_float
 
     async def goto_mm(self, mm: int):
+        # The desk keeps moving until told to stop, so issue a stop first to
+        # interrupt any in-progress move (matches the reference app's recipe).
+        await self.stop()
+
         units = await self.get_units()
 
         if units == Units.MM:
@@ -201,6 +214,9 @@ class Blesk:
     async def goto_preset(self, preset: Preset):
         preset_info = PresetDict[preset]
 
+        # Stop first so an in-progress move is interrupted before the new
+        # target is applied (matches the reference app's recipe).
+        await self.stop()
         await self.send_frame(Frame(command=preset_info.goto))
 
     async def get_preset_mm(self, preset: Preset):

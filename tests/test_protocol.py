@@ -532,6 +532,24 @@ def test_to_bytes_empty_params():
     assert len(result) == 6  # Minimal size
 
 
+def test_to_bytes_stop():
+    """Serialize a STOP (0x2B) frame; must match the protocol reference exactly."""
+    frame = Frame(command=DeskType.STOP)
+    result = frame.to_bytes()
+
+    assert result == b"\xf1\xf1\x2b\x00\x2b\x7e"
+
+
+def test_from_bytes_stop():
+    """Parse a STOP (0x2B) frame back out."""
+    message = b"\xf1\xf1\x2b\x00\x2b\x7e"
+    frame = Frame.from_bytes(message)
+
+    assert frame.command == DeskType.STOP
+    assert frame.params == b""
+    assert frame.address == Address.DESK
+
+
 # =============================================================================
 # Frame.address Property Tests
 # =============================================================================

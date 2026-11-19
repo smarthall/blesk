@@ -175,6 +175,16 @@ async def test_wake(connected_desk, mock_bleak_client_class):
     assert frame.command == DeskType.BLE_WAKE
 
 
+@pytest.mark.asyncio
+async def test_stop(connected_desk, mock_bleak_client_class):
+    """Test sending the stop command (0x2B)."""
+    await connected_desk.stop()
+
+    last_call_data = mock_bleak_client_class.write_gatt_char.await_args_list[-1][0][1]
+    frame = Frame.from_bytes(last_call_data)
+    assert frame.command == DeskType.STOP
+
+
 # =============================================================================
 # Frame Receiving and Callback Tests
 # =============================================================================
@@ -502,6 +512,41 @@ async def test_goto_preset(connected_desk, mock_bleak_client_class):
     frame = Frame.from_bytes(last_call_data)
 
     assert frame.command == DeskType.MOVE_1
+
+
+def _sent_commands(mock_bleak_client_class):
+    """Return the list of DeskType commands sent via write_gatt_char."""
+    return [
+        Frame.from_bytes(call[0][1]).command
+        for call in mock_bleak_client_class.write_gatt_char.await_args_list
+    ]
+
+
+@pytest.mark.asyncio
+async def test_goto_mm_stops_before_goto(connected_desk, mock_bleak_client_class):
+    """goto_mm should send STOP before GOTO_HEIGHT to interrupt any move."""
+    connected_desk._connection_cache[HostType.UNITS] = Frame(
+        command=HostType.UNITS, params=b"\x00"
+    )
+    mock_bleak_client_class.write_gatt_char.reset_mock()
+
+    await connected_desk.goto_mm(1100)
+
+    commands = _sent_commands(mock_bleak_client_class)
+    assert DeskType.STOP in commands
+    assert DeskType.GOTO_HEIGHT in commands
+    assert commands.index(DeskType.STOP) < commands.index(DeskType.GOTO_HEIGHT)
+
+
+@pytest.mark.asyncio
+async def test_goto_preset_stops_before_goto(connected_desk, mock_bleak_client_class):
+    """goto_preset should send STOP before the preset move command."""
+    mock_bleak_client_class.write_gatt_char.reset_mock()
+
+    await connected_desk.goto_preset(Preset.ONE)
+
+    commands = _sent_commands(mock_bleak_client_class)
+    assert commands.index(DeskType.STOP) < commands.index(DeskType.MOVE_1)
 
 
 @pytest.mark.asyncio
