@@ -4,6 +4,11 @@
     "config:recommended",
     ":automergeAll"
   ],
+  "enabledManagers": [
+    "poetry",
+    "pre-commit",
+    "github-actions"
+  ],
   "packageRules": [
     {
       "description": "Never automerge Python version updates - they change the range of supported interpreters",
