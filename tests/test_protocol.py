@@ -618,6 +618,29 @@ def test_real_height_query_response():
     assert height_mm.mm == 750
 
 
+def test_real_3byte_height_response():
+    """Parse the real 3-byte height frame captured from a live FE60 desk.
+
+    The firmware sends height with a three-byte payload (``F2 F2 01 03 ...``);
+    the third byte is unknown on this firmware and must be ignored, while the
+    first two bytes hold the height. This is the actual on-the-wire shape --
+    the older fixtures used a two-byte payload that never appears on the desk.
+    """
+    # F2 F2 01 03 02 A5 0F BA 7E -> height 0x02A5 = 677 (= 67.7 cm)
+    # Checksum = (01 + 03 + 02 + A5 + 0F) & 0xFF = 0xBA
+    message = b"\xf2\xf2\x01\x03\x02\xa5\x0f\xba\x7e"
+
+    frame = Frame.from_bytes(message)
+    assert frame.command == HostType.HEIGHT
+    assert frame.params == b"\x02\xa5\x0f"
+    assert len(frame.params) == 3
+
+    # Decoding uses only the first two payload bytes; the unknown third byte
+    # is ignored.
+    height_mm = HeightData(frame.params[0:2]).decode_as_mm
+    assert height_mm.mm == 677
+
+
 def test_real_preset_get_response():
     """Parse a realistic POSITION_1 response."""
     # Preset 1 stored at 750mm

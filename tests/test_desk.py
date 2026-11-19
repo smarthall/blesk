@@ -463,6 +463,29 @@ async def test_get_height_mm_from_inches(connected_desk):
 
 
 @pytest.mark.asyncio
+async def test_get_height_mm_real_3byte_frame(connected_desk):
+    """get_height_mm must ignore the unknown 3rd byte of a real height frame.
+
+    The live desk sends a three-byte height payload (e.g. ``02 A5 0F`` = 677
+    raw); only the first two bytes are the height.
+    """
+    height_task = asyncio.create_task(connected_desk.get_height_mm())
+    await asyncio.sleep(0.01)
+
+    # Desk in mm/cm mode
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.UNITS, params=b"\x00")
+    )
+    # Real 3-byte height frame: 0x02A5 = 677 (= 67.7 cm), third byte 0x0F
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.HEIGHT, params=b"\x02\xa5\x0f")
+    )
+
+    result = await height_task
+    assert result == 677
+
+
+@pytest.mark.asyncio
 async def test_goto_mm_in_mm_mode(connected_desk, mock_bleak_client_class):
     """Test moving to specific height in MM mode."""
     # Pre-cache units as MM
