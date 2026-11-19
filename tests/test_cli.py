@@ -12,7 +12,7 @@ from bleak.backends.device import BLEDevice
 from click.testing import CliRunner
 
 from blesk.cli import DeskConfig, cli, make_sync
-from blesk.protocol import Preset
+from blesk.protocol import LightColor, Preset
 
 
 # =============================================================================
@@ -580,3 +580,158 @@ def test_set_desk_different_profile(runner, temp_config_file):
     # Default profile should still be empty
     config_default = DeskConfig(configfile=temp_config_file, profile="default")
     assert config_default.desk_address is None
+
+
+def _mock_desk(**methods):
+    """Build an async-context-manager desk mock with the given async methods."""
+    mock_desk = MagicMock()
+    mock_desk.__aenter__ = AsyncMock(return_value=mock_desk)
+    mock_desk.__aexit__ = AsyncMock(return_value=None)
+    for name, value in methods.items():
+        setattr(mock_desk, name, value)
+    return mock_desk
+
+
+# =============================================================================
+# get lock / light / brightness / color Command Tests
+# =============================================================================
+
+
+def test_get_lock_success(runner, temp_config_file):
+    """Test get lock reports the state and calls the desk."""
+    mock_desk = _mock_desk(get_lock=AsyncMock(return_value=True))
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(cli, ["--config", temp_config_file, "get", "lock"])
+
+    assert result.exit_code == 0
+    assert "Lock is on" in result.output
+    mock_desk.get_lock.assert_awaited_once()
+
+
+def test_get_light_success(runner, temp_config_file):
+    """Test get light reports the state and calls the desk."""
+    mock_desk = _mock_desk(get_lighting=AsyncMock(return_value=False))
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(cli, ["--config", temp_config_file, "get", "light"])
+
+    assert result.exit_code == 0
+    assert "Light is off" in result.output
+    mock_desk.get_lighting.assert_awaited_once()
+
+
+def test_get_brightness_success(runner, temp_config_file):
+    """Test get brightness reports the value and calls the desk."""
+    mock_desk = _mock_desk(get_brightness=AsyncMock(return_value=60))
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(cli, ["--config", temp_config_file, "get", "brightness"])
+
+    assert result.exit_code == 0
+    assert "Brightness is 60" in result.output
+    mock_desk.get_brightness.assert_awaited_once()
+
+
+def test_get_color_success(runner, temp_config_file):
+    """Test get color reports the colour and calls the desk."""
+    mock_desk = _mock_desk(get_light_color=AsyncMock(return_value=LightColor.PARTY))
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(cli, ["--config", temp_config_file, "get", "color"])
+
+    assert result.exit_code == 0
+    assert "party" in result.output
+    mock_desk.get_light_color.assert_awaited_once()
+
+
+def test_get_lock_no_device(runner, temp_config_file):
+    """Test get lock when no device is found."""
+    with patch("blesk.cli.DeskConfig.get_desk") as mock_get_desk:
+        mock_get_desk.return_value = None
+        result = runner.invoke(cli, ["--config", temp_config_file, "get", "lock"])
+
+    assert "Could not find any devices" in result.output
+
+
+# =============================================================================
+# set lock / light / brightness / color Command Tests
+# =============================================================================
+
+
+def test_set_lock_success(runner, temp_config_file):
+    """Test set lock on."""
+    mock_desk = _mock_desk(set_lock=AsyncMock())
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(cli, ["--config", temp_config_file, "set", "lock", "on"])
+
+    assert result.exit_code == 0
+    assert "Lock set to on" in result.output
+    mock_desk.set_lock.assert_awaited_once_with(True)
+
+
+def test_set_lock_off(runner, temp_config_file):
+    """Test set lock off."""
+    mock_desk = _mock_desk(set_lock=AsyncMock())
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(
+            cli, ["--config", temp_config_file, "set", "lock", "off"]
+        )
+
+    assert result.exit_code == 0
+    mock_desk.set_lock.assert_awaited_once_with(False)
+
+
+def test_set_light_success(runner, temp_config_file):
+    """Test set light on."""
+    mock_desk = _mock_desk(set_lighting=AsyncMock())
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(
+            cli, ["--config", temp_config_file, "set", "light", "on"]
+        )
+
+    assert result.exit_code == 0
+    assert "Light set to on" in result.output
+    mock_desk.set_lighting.assert_awaited_once_with(True)
+
+
+def test_set_brightness_success(runner, temp_config_file):
+    """Test set brightness."""
+    mock_desk = _mock_desk(set_brightness=AsyncMock())
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(
+            cli, ["--config", temp_config_file, "set", "brightness", "40"]
+        )
+
+    assert result.exit_code == 0
+    assert "Brightness set to 40" in result.output
+    mock_desk.set_brightness.assert_awaited_once_with(40)
+
+
+def test_set_brightness_out_of_range(runner, temp_config_file):
+    """Test set brightness rejects values outside 0-100."""
+    with patch("blesk.cli.DeskConfig.get_desk"):
+        result = runner.invoke(
+            cli, ["--config", temp_config_file, "set", "brightness", "150"]
+        )
+
+    assert result.exit_code != 0
+
+
+def test_set_color_success(runner, temp_config_file):
+    """Test set color maps the choice to the LightColor enum."""
+    mock_desk = _mock_desk(set_light_color=AsyncMock())
+    with patch("blesk.cli.DeskConfig.get_desk", return_value=mock_desk):
+        result = runner.invoke(
+            cli, ["--config", temp_config_file, "set", "color", "party"]
+        )
+
+    assert result.exit_code == 0
+    assert "Light colour set to party" in result.output
+    mock_desk.set_light_color.assert_awaited_once_with(LightColor.PARTY)
+
+
+def test_set_color_invalid(runner, temp_config_file):
+    """Test set color rejects an unknown colour."""
+    with patch("blesk.cli.DeskConfig.get_desk"):
+        result = runner.invoke(
+            cli, ["--config", temp_config_file, "set", "color", "purple"]
+        )
+
+    assert result.exit_code != 0

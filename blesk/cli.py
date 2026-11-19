@@ -9,7 +9,7 @@ import os
 from blesk.desk import Blesk
 
 from .discover import discover
-from .protocol import Preset
+from .protocol import LightColor, Preset
 
 from platformdirs import PlatformDirs
 
@@ -218,6 +218,70 @@ async def get_preset(config: DeskConfig, preset: str):
             print(f"Preset {p.name.lower()} height is {height}mm")
 
 
+@get.command(name="lock")
+@make_sync
+@pass_config
+async def get_lock(config: DeskConfig):
+    """Get the child-lock state."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        locked = await dev.get_lock()
+
+    print(f"Lock is {'on' if locked else 'off'}")
+
+
+@get.command(name="light")
+@make_sync
+@pass_config
+async def get_light(config: DeskConfig):
+    """Get the light state."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        on = await dev.get_lighting()
+
+    print(f"Light is {'on' if on else 'off'}")
+
+
+@get.command(name="brightness")
+@make_sync
+@pass_config
+async def get_brightness(config: DeskConfig):
+    """Get the light brightness."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        percent = await dev.get_brightness()
+
+    print(f"Brightness is {percent}")
+
+
+@get.command(name="color")
+@make_sync
+@pass_config
+async def get_color(config: DeskConfig):
+    """Get the light colour."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        color = await dev.get_light_color()
+
+    print(f"Light colour is {color.name.lower()}")
+
+
 @cli.group()
 @make_sync
 async def set():
@@ -234,3 +298,74 @@ async def desk(config: DeskConfig, address: str):
 
     config.desk_address = address
     config.save()
+
+
+@set.command(name="lock")
+@click.argument("state", type=click.Choice(["on", "off"]))
+@make_sync
+@pass_config
+async def set_lock(config: DeskConfig, state: str):
+    """Set the child lock on or off."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        await dev.set_lock(state == "on")
+
+    print(f"Lock set to {state}")
+
+
+@set.command(name="light")
+@click.argument("state", type=click.Choice(["on", "off"]))
+@make_sync
+@pass_config
+async def set_light(config: DeskConfig, state: str):
+    """Set the light on or off."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        await dev.set_lighting(state == "on")
+
+    print(f"Light set to {state}")
+
+
+@set.command(name="brightness")
+@click.argument("percent", type=click.IntRange(0, 100))
+@make_sync
+@pass_config
+async def set_brightness(config: DeskConfig, percent: int):
+    """Set the light brightness (0-100)."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        await dev.set_brightness(percent)
+
+    print(f"Brightness set to {percent}")
+
+
+@set.command(name="color")
+@click.argument(
+    "colour",
+    type=click.Choice(["off", "white", "red", "green", "blue", "yellow", "party"]),
+)
+@make_sync
+@pass_config
+async def set_color(config: DeskConfig, colour: str):
+    """Set the light colour."""
+    dev = await config.get_desk()
+    if dev is None:
+        print("Could not find any devices...")
+        return
+
+    async with dev:
+        await dev.set_light_color(LightColor[colour.upper()])
+
+    print(f"Light colour set to {colour}")

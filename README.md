@@ -9,6 +9,8 @@ A Python command-line tool for controlling Desky standing desks via Bluetooth Lo
 
 - **Height Control**: Move your desk to any specific height in millimeters
 - **Preset Management**: Save and recall up to 4 preset heights
+- **Child Lock**: Toggle the desk's child lock
+- **Lighting Control**: Turn the light on/off, set brightness and colour
 - **Multi-desk Support**: Configure and manage multiple desks using profiles
 - **Auto-discovery**: Automatically detect nearby Desky desks
 - **Cross-platform**: Works on any platform with BLE support (Linux, macOS, Windows)
@@ -128,6 +130,29 @@ Displays the current desk height in millimeters.
 ```bash
 blesk get preset all        # Get all preset heights
 blesk get preset <1-4>      # Get a specific preset
+```
+
+#### Child Lock
+
+```bash
+blesk get lock              # Show the child-lock state
+blesk set lock on           # Enable the child lock
+blesk set lock off          # Disable the child lock
+```
+
+> The child lock guards the physical desk panel and the app's UI; it does
+> **not** block BLE movement commands.
+
+#### Light, Brightness and Colour
+
+```bash
+blesk get light                          # Show the light state
+blesk set light on|off                   # Turn the light on or off
+blesk get brightness                     # Show the brightness (0-100)
+blesk set brightness <0-100>             # Set the brightness
+blesk get color                          # Show the light colour
+blesk set color <color>                  # Set the colour: off, white, red, green,
+                                         # blue, yellow or party
 ```
 
 ### Advanced Options
