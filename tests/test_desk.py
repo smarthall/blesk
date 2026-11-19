@@ -12,7 +12,7 @@ from bleak.backends.device import BLEDevice
 
 from blesk.const import desk_attribute_notify, desk_attribute_write
 from blesk.desk import Blesk
-from blesk.protocol import DeskType, Frame, HostType, Preset, Units
+from blesk.protocol import DeskType, Frame, HostType, LightColor, Preset, Units
 
 
 # =============================================================================
@@ -240,6 +240,101 @@ async def test_set_lock_then_get_reflects_state(connected_desk):
     # Now get_lock should be served from the cache (the new value).
     result = await connected_desk.get_lock()
     assert result is True
+
+
+@pytest.mark.asyncio
+async def test_set_lighting_on(connected_desk, mock_bleak_client_class):
+    """set_lighting(True) sends the documented 0xB5 on frame."""
+    await connected_desk.set_lighting(True)
+
+    last = mock_bleak_client_class.write_gatt_char.await_args_list[-1][0][1]
+    assert last == b"\xf1\xf1\xb5\x01\x01\xb7\x7e"
+
+
+@pytest.mark.asyncio
+async def test_set_lighting_off(connected_desk, mock_bleak_client_class):
+    """set_lighting(False) sends the documented 0xB5 off frame."""
+    await connected_desk.set_lighting(False)
+
+    last = mock_bleak_client_class.write_gatt_char.await_args_list[-1][0][1]
+    assert last == b"\xf1\xf1\xb5\x01\x00\xb6\x7e"
+
+
+@pytest.mark.asyncio
+async def test_set_brightness(connected_desk, mock_bleak_client_class):
+    """set_brightness(60) sends the documented 0xB6 frame."""
+    await connected_desk.set_brightness(60)
+
+    last = mock_bleak_client_class.write_gatt_char.await_args_list[-1][0][1]
+    assert last == b"\xf1\xf1\xb6\x01\x3c\xf3\x7e"
+
+
+@pytest.mark.asyncio
+async def test_set_brightness_out_of_range(connected_desk):
+    """set_brightness rejects values outside 0-100."""
+    with pytest.raises(ValueError):
+        await connected_desk.set_brightness(101)
+
+
+@pytest.mark.asyncio
+async def test_set_light_color(connected_desk, mock_bleak_client_class):
+    """set_light_color(white) sends the documented 0xB4 frame."""
+    await connected_desk.set_light_color(LightColor.WHITE)
+
+    last = mock_bleak_client_class.write_gatt_char.await_args_list[-1][0][1]
+    assert last == b"\xf1\xf1\xb4\x01\x01\xb6\x7e"
+
+
+@pytest.mark.asyncio
+async def test_get_lighting(connected_desk):
+    """get_lighting returns True when the desk reports the light on."""
+    task = asyncio.create_task(connected_desk.get_lighting())
+    await asyncio.sleep(0.01)
+
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.LIGHTING, params=b"\x01")
+    )
+
+    assert (await task) is True
+
+
+@pytest.mark.asyncio
+async def test_get_brightness(connected_desk):
+    """get_brightness returns the reported brightness value."""
+    task = asyncio.create_task(connected_desk.get_brightness())
+    await asyncio.sleep(0.01)
+
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.BRIGHTNESS, params=b"\x64")
+    )
+
+    assert (await task) == 100
+
+
+@pytest.mark.asyncio
+async def test_get_light_color(connected_desk):
+    """get_light_color returns the reported colour as a LightColor."""
+    task = asyncio.create_task(connected_desk.get_light_color())
+    await asyncio.sleep(0.01)
+
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.LIGHT_COLOR, params=b"\x06")
+    )
+
+    assert (await task) == LightColor.PARTY
+
+
+@pytest.mark.asyncio
+async def test_get_light_color_off_variant(connected_desk):
+    """get_light_color maps the parser-only 0x07 'off' value to OFF."""
+    task = asyncio.create_task(connected_desk.get_light_color())
+    await asyncio.sleep(0.01)
+
+    await connected_desk._valid_frame_callback(
+        Frame(command=HostType.LIGHT_COLOR, params=b"\x07")
+    )
+
+    assert (await task) == LightColor.OFF
 
 
 # =============================================================================

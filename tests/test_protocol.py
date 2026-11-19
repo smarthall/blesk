@@ -9,6 +9,7 @@ from blesk.protocol import (
     HeightIn,
     HeightMM,
     HostType,
+    LightColor,
     Units,
 )
 
@@ -570,6 +571,83 @@ def test_from_bytes_lock_state():
     frame = Frame.from_bytes(b"\xf2\xf2\xb2\x01\x01\xb4\x7e")
 
     assert frame.command == HostType.BLE_WAKE_RESP
+    assert frame.params == b"\x01"
+
+
+def test_lightcolor_values():
+    """Light colour values match the reference app (0-6)."""
+    assert LightColor.OFF.value == 0
+    assert LightColor.WHITE.value == 1
+    assert LightColor.RED.value == 2
+    assert LightColor.GREEN.value == 3
+    assert LightColor.BLUE.value == 4
+    assert LightColor.YELLOW.value == 5
+    assert LightColor.PARTY.value == 6
+
+
+def test_to_bytes_set_light_on():
+    """Set-light on frame must match the reference exactly."""
+    frame = Frame(command=DeskType.SET_LIGHTING, params=b"\x01")
+    # F1 F1 B5 01 01 B7 7E (checksum B5 + 01 + 01 = B7)
+    assert frame.to_bytes() == b"\xf1\xf1\xb5\x01\x01\xb7\x7e"
+
+
+def test_to_bytes_set_light_off():
+    """Set-light off frame must match the reference exactly."""
+    frame = Frame(command=DeskType.SET_LIGHTING, params=b"\x00")
+    # F1 F1 B5 01 00 B6 7E (checksum B5 + 01 + 00 = B6)
+    assert frame.to_bytes() == b"\xf1\xf1\xb5\x01\x00\xb6\x7e"
+
+
+def test_to_bytes_set_brightness_100():
+    """Brightness-100 frame must match the reference exactly."""
+    frame = Frame(command=DeskType.SET_BRIGHTNESS, params=b"\x64")
+    # F1 F1 B6 01 64 1B 7E (checksum B6 + 01 + 64 = 1B)
+    assert frame.to_bytes() == b"\xf1\xf1\xb6\x01\x64\x1b\x7e"
+
+
+def test_to_bytes_set_brightness_60():
+    """Brightness-60 frame must match the reference exactly."""
+    frame = Frame(command=DeskType.SET_BRIGHTNESS, params=b"\x3c")
+    # F1 F1 B6 01 3C F3 7E (checksum B6 + 01 + 3C = F3)
+    assert frame.to_bytes() == b"\xf1\xf1\xb6\x01\x3c\xf3\x7e"
+
+
+def test_to_bytes_set_light_color_white():
+    """Set-colour white frame must match the reference exactly."""
+    frame = Frame(command=DeskType.SET_LIGHT_COLOR, params=b"\x01")
+    # F1 F1 B4 01 01 B6 7E (checksum B4 + 01 + 01 = B6)
+    assert frame.to_bytes() == b"\xf1\xf1\xb4\x01\x01\xb6\x7e"
+
+
+def test_to_bytes_set_light_color_party():
+    """Set-colour party frame must match the reference exactly."""
+    frame = Frame(command=DeskType.SET_LIGHT_COLOR, params=b"\x06")
+    # F1 F1 B4 01 06 BB 7E (checksum B4 + 01 + 06 = BB)
+    assert frame.to_bytes() == b"\xf1\xf1\xb4\x01\x06\xbb\x7e"
+
+
+def test_from_bytes_lighting_state():
+    """Parse the light-state notification (F2 F2 B5 01 <state>)."""
+    frame = Frame.from_bytes(b"\xf2\xf2\xb5\x01\x01\xb7\x7e")
+
+    assert frame.command == HostType.LIGHTING
+    assert frame.params == b"\x01"
+
+
+def test_from_bytes_brightness_state():
+    """Parse the brightness notification (F2 F2 B6 01 <pct>)."""
+    frame = Frame.from_bytes(b"\xf2\xf2\xb6\x01\x64\x1b\x7e")
+
+    assert frame.command == HostType.BRIGHTNESS
+    assert frame.params == b"\x64"
+
+
+def test_from_bytes_light_color_state():
+    """Parse the light-colour notification (F2 F2 B4 01 <color>)."""
+    frame = Frame.from_bytes(b"\xf2\xf2\xb4\x01\x01\xb6\x7e")
+
+    assert frame.command == HostType.LIGHT_COLOR
     assert frame.params == b"\x01"
 
 

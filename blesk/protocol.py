@@ -31,6 +31,22 @@ class Units(Enum):
     IN = 0x01
 
 
+class LightColor(Enum):
+    """Light-colour values (0xB4 command/notification).
+
+    The reference app's parser also renders ``0x07`` as "Off"; the setter uses
+    ``0x00`` for off, and ``get_light_color`` maps ``0x07`` back to OFF.
+    """
+
+    OFF = 0x00
+    WHITE = 0x01
+    RED = 0x02
+    GREEN = 0x03
+    BLUE = 0x04
+    YELLOW = 0x05
+    PARTY = 0x06
+
+
 class HostType(Enum):
     """
     Messages types for messages _to_ the Host _from_ the Desk
@@ -52,6 +68,10 @@ class HostType(Enum):
     POSITION_4 = 0x28
 
     BLE_WAKE_RESP = 0xB2
+
+    LIGHT_COLOR = 0xB4
+    LIGHTING = 0xB5
+    BRIGHTNESS = 0xB6
 
 
 class DeskType(Enum):
@@ -79,6 +99,10 @@ class DeskType(Enum):
     STOP = 0x2B
 
     BLE_WAKE = 0xB2
+
+    SET_LIGHT_COLOR = 0xB4
+    SET_LIGHTING = 0xB5
+    SET_BRIGHTNESS = 0xB6
 
 
 PresetInfo = namedtuple("PositionInfo", ["goto", "set_current", "get"])

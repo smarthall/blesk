@@ -10,6 +10,7 @@ from .protocol import (
     DeskType,
     HeightData,
     HostType,
+    LightColor,
     Preset,
     Units,
     PresetDict,
@@ -178,6 +179,50 @@ class Blesk:
         """
         await self.send_frame(
             Frame(command=DeskType.BLE_WAKE, params=bytes([int(locked)]))
+        )
+
+    async def get_lighting(self) -> bool:
+        """Return the light state (True = on)."""
+        frame = await self.query(
+            send=Frame(command=DeskType.SET_LIGHTING), receive=HostType.LIGHTING
+        )
+        return bool(frame.params[0])
+
+    async def set_lighting(self, on: bool) -> None:
+        """Turn the light on (``on=True``) or off (``on=False``)."""
+        await self.send_frame(
+            Frame(command=DeskType.SET_LIGHTING, params=bytes([int(on)]))
+        )
+
+    async def get_brightness(self) -> int:
+        """Return the light brightness (0-100)."""
+        frame = await self.query(
+            send=Frame(command=DeskType.SET_BRIGHTNESS), receive=HostType.BRIGHTNESS
+        )
+        return int(frame.params[0])
+
+    async def set_brightness(self, percent: int) -> None:
+        """Set the light brightness to ``percent`` (0-100)."""
+        if not 0 <= percent <= 100:
+            raise ValueError("brightness must be 0-100")
+        await self.send_frame(
+            Frame(command=DeskType.SET_BRIGHTNESS, params=bytes([percent]))
+        )
+
+    async def get_light_color(self) -> LightColor:
+        """Return the current light colour."""
+        frame = await self.query(
+            send=Frame(command=DeskType.SET_LIGHT_COLOR), receive=HostType.LIGHT_COLOR
+        )
+        value = int(frame.params[0])
+        if value == 0x07:  # the reference app's parser also reports off as 0x07
+            return LightColor.OFF
+        return LightColor(value)
+
+    async def set_light_color(self, color: LightColor) -> None:
+        """Set the light colour to ``color``."""
+        await self.send_frame(
+            Frame(command=DeskType.SET_LIGHT_COLOR, params=bytes([color.value]))
         )
 
     async def connect(self):
